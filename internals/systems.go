@@ -7,9 +7,9 @@ import (
 
 func SystemIntegration(filename string, chunkSize int, numWorkers int) error {
 	// Use the Chunk function to read and chunk the file
-	chunks, err := idx.Chunk(filename, chunkSize)
+	_, err := idx.Chunk(filename, chunkSize)
 	if err != nil {
 		return fmt.Errorf("failed to chunk file: %w", err)
 	}
-
+	return nil
 }
