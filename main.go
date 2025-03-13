@@ -10,9 +10,9 @@ func main() {
 
 	config, err := internals.ParseFlags()
 	if err != nil {
-        fmt.Printf("Error parsing flags: %v\n", err)
-        return
-    }
+		fmt.Printf("Error parsing flags: %v\n", err)
+		return
+	}
 
 	switch config.Command {
 	case "index":
