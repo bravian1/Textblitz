@@ -31,7 +31,6 @@ func TestWorkerPoolStart(t *testing.T) {
 
 	pool.Start()
 
-	// Check if all workers were created
 	if len(pool.workers) != numWorkers {
 		t.Errorf("Expected %d workers, but got %d", numWorkers, len(pool.workers))
 	}
@@ -45,7 +44,7 @@ func TestWorkerPoolStart(t *testing.T) {
 		}
 	}
 
-	// Give time for goroutines to start but with a timeout
+
 	taskSent := make(chan struct{})
 	go func() {
 		// Try to send a task
@@ -58,26 +57,57 @@ func TestWorkerPoolStart(t *testing.T) {
 		}
 	}()
 
-	// Wait for task to be sent or timeout
 	select {
 	case <-taskSent:
-		// Continue
+		
 	case <-time.After(1 * time.Second):
 		t.Log("Warning: Timeout waiting to send task")
 	}
-
-	// Make sure to call Stop in a non-blocking way
 	stopDone := make(chan struct{})
 	go func() {
 		pool.Stop()
 		close(stopDone)
 	}()
 
-	// Wait for stop with timeout
 	select {
 	case <-stopDone:
 		// Stopped successfully
 	case <-time.After(1 * time.Second):
 		t.Log("Warning: Timeout waiting for pool to stop")
+	}
+}
+
+// TestSubmitAndResults verifies that tasks can be submitted and results retrieved
+func TestSubmitAndResults(t *testing.T) {
+	pool := NewWorkerPool(1)
+	pool.Start()
+	defer pool.Stop()
+
+	// Create a test task
+	testTask := Task{
+		ID:   42,
+		Data: []byte("test data"),
+	}
+	expectedHash := computeHash(testTask.Data)
+
+
+	pool.Submit(testTask)
+
+	
+	var result Result
+	select {
+	case result = <-pool.Results():
+		
+	case <-time.After(1 * time.Second):
+		t.Fatal("Timeout waiting for result")
+	}
+
+	
+	if result.TaskID != testTask.ID {
+		t.Errorf("Expected TaskID %d, got %d", testTask.ID, result.TaskID)
+	}
+
+	if result.Hash != expectedHash {
+		t.Errorf("Expected Hash %d, got %d", expectedHash, result.Hash)
 	}
 }
