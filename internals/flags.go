@@ -33,6 +33,12 @@ func ParseFlags() CLIFlags {
 	//parse flags
 	flag.Parse()
 
+	//print help message if requested
+	if *help {
+		PrintHelp()
+		os.Exit(0)
+	}
+
 	//validate flags
 	if config.Command == "" {
 		log.Fatalf("Error: Missing Command  (-c 'index' or 'lookup'). Use --help for details.")
@@ -46,16 +52,10 @@ func ParseFlags() CLIFlags {
 		log.Fatalf("Error:Input file  (-i <index_file.idx>) or SimHash (-h <simhash_value>)  are required for lookup. Use --help for details.")
 	}
 
-	//print help message if requested
-	if *help {
-		PrintHelp()
-		os.Exit(0)
-	}
-
 	return config
 }
 
-//DisplayHelp displays the help message
+// DisplayHelp displays the help message
 func PrintHelp() {
 	fmt.Println(`
 	
