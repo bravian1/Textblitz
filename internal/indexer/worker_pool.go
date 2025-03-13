@@ -72,5 +72,26 @@ func (p *WorkerPool) Stop() {
     close(p.results)       // Close results
 }
 
-
+// run is the main worker processing loop
+func (w *Worker) run(wg *sync.WaitGroup) {
+    defer wg.Done()
+    
+    for {
+        select {
+        case task, ok := <-w.tasks:
+            if !ok {
+                return // Channel closed
+            }
+            // Process task and send result
+            result := Result{
+                TaskID: task.ID,
+                Hash:   computeHash(task.Data),
+            }
+            w.results <- result
+            
+        case <-w.quit:
+            return // Quit signal received
+        }
+    }
+}
 // Start initializes and starts all workers in the pool
