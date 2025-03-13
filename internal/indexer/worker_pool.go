@@ -52,3 +52,25 @@ func (p *WorkerPool) Start() {
 		go worker.run(&p.wg) // Start in goroutine
 	}
 }
+// Submit adds a new task to the pool
+func (p *WorkerPool) Submit(task Task) {
+    p.tasks <- task
+}
+
+// Results returns the channel for receiving results
+func (p *WorkerPool) Results() <-chan Result {
+    return p.results
+}
+
+// Stop gracefully shuts down the worker pool
+func (p *WorkerPool) Stop() {
+    close(p.tasks)          // No more tasks
+    for _, w := range p.workers {
+        w.quit <- true      // Signal workers
+    }
+    p.wg.Wait()            // Wait for completion
+    close(p.results)       // Close results
+}
+
+
+// Start initializes and starts all workers in the pool
