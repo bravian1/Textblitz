@@ -47,12 +47,12 @@ func TestWorkerPoolStart(t *testing.T) {
 
 	taskSent := make(chan struct{})
 	go func() {
-		// Try to send a task
+
 		select {
 		case pool.tasks <- Task{ID: 1, Data: []byte("test")}:
 			close(taskSent)
 		case <-time.After(500 * time.Millisecond):
-			// If we can't send after timeout, continue anyway
+		
 			close(taskSent)
 		}
 	}()
@@ -71,7 +71,7 @@ func TestWorkerPoolStart(t *testing.T) {
 
 	select {
 	case <-stopDone:
-		// Stopped successfully
+	
 	case <-time.After(1 * time.Second):
 		t.Log("Warning: Timeout waiting for pool to stop")
 	}
@@ -111,3 +111,4 @@ func TestSubmitAndResults(t *testing.T) {
 		t.Errorf("Expected Hash %d, got %d", expectedHash, result.Hash)
 	}
 }
+

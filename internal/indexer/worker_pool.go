@@ -57,32 +57,31 @@ func (p *WorkerPool) Start() {
 	
 }
 
-// Submit adds a new task to the pool
+
 func (p *WorkerPool) Submit(task Task) {
 	p.tasks <- task
 }
 
-// Results returns the channel for receiving results
+
 func (p *WorkerPool) Results() <-chan Result {
 	return p.results
 }
 
-// Stop gracefully shuts down the worker pool
+		
 func (p *WorkerPool) Stop() {
-	// First close the tasks channel to signal no more tasks
+	
 	close(p.tasks)
 
-	// Signal all workers to quit using non-blocking sends
+	
 	for _, w := range p.workers {
-		if w != nil { // Ensure worker exists
+		if w != nil { 
 			select {
-			case w.quit <- true: // Try to send quit signal
-			default: // Don't block if channel is full or can't be sent to
+			case w.quit <- true: 
+			default: 
 			}
 		}
 	}
 
-	// Wait for all workers to finish with a timeout
 	done := make(chan struct{})
 	go func() {
 		p.wg.Wait()
@@ -91,12 +90,11 @@ func (p *WorkerPool) Stop() {
 
 	select {
 	case <-done:
-		// Workers finished normally
 	case <-time.After(2 * time.Second):
-		// Timeout - some workers might be stuck
+
 	}
 
-	// Close results channel
+
 	close(p.results)
 }
 
@@ -117,7 +115,7 @@ func (w *Worker) run(wg *sync.WaitGroup) {
 			w.results <- result
 
 		case <-w.quit:
-			return // Quit signal received
+			return 
 		}
 	}
 }
