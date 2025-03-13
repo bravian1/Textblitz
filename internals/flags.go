@@ -3,8 +3,6 @@ package internals
 import (
 	"flag"
 	"fmt"
-	"log"
-	"os"
 )
 
 // CLIflags holds the parsed command line arguments
@@ -18,7 +16,7 @@ type CLIFlags struct {
 }
 
 // Parseflags parses command line arguments and returns a CLIFlags struct
-func ParseFlags() CLIFlags {
+func ParseFlags() (CLIFlags, error) {
 	config := CLIFlags{}
 
 	//flags
@@ -32,26 +30,25 @@ func ParseFlags() CLIFlags {
 
 	flag.Parse()
 
-	
 	if *help {
 		PrintHelp()
-		os.Exit(0)
+		return config, fmt.Errorf("help message displayed")
 	}
 
 	//validate flags
 	if config.Command == "" {
-		log.Fatalf("Error: Missing Command  (-c 'index' or 'lookup'). Use --help for details.")
+		return config, fmt.Errorf("Error: Missing Command  (-c 'index' or 'lookup'). Use --help for details.")
 	}
 
 	if config.Command == "index" && (config.InputFile == "" || config.OutputFile == "") {
-		log.Fatalf("Error: Input file  (-i <input_file.txt> )or OutputFile (-o <index.idx>)  are required for indexing. Use --help for details.")
+		return config, fmt.Errorf("Error: Input file  (-i <input_file.txt> )or OutputFile (-o <index.idx>)  are required for indexing. Use --help for details.")
 	}
 
 	if config.Command == "lookup" && (config.InputFile == "" || config.SimHash == "") {
-		log.Fatalf("Error:Input file  (-i <index_file.idx>) or SimHash (-h <simhash_value>)  are required for lookup. Use --help for details.")
+		return config, fmt.Errorf("Error:Input file  (-i <index_file.idx>) or SimHash (-h <simhash_value>)  are required for lookup. Use --help for details.")
 	}
 
-	return config
+	return config, nil
 }
 
 // print help message

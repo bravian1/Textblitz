@@ -8,7 +8,11 @@ import (
 
 func main() {
 
-	config := internals.ParseFlags()
+	config, err := internals.ParseFlags()
+	if err != nil {
+        fmt.Printf("Error parsing flags: %v\n", err)
+        return
+    }
 
 	switch config.Command {
 	case "index":

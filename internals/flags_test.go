@@ -14,7 +14,11 @@ func resetArgs(args []string) {
 func TestParseFlags_IndexCommand(t *testing.T) {
 	resetArgs([]string{"-c", "index", "-i", "sample.txt", "-s", "4096", "-o", "index.idx", "-w", "8"})
 
-	config := ParseFlags()
+	config, err := ParseFlags()
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	if config.Command != "index" {
 		t.Errorf("Expected command 'index', got %s", config.Command)
@@ -37,7 +41,10 @@ func TestParseFlags_IndexCommand(t *testing.T) {
 func TestParseFlags_LookupCommand(t *testing.T) {
 	resetArgs([]string{"-c", "lookup", "-i", "index.idx", "-h", "3e4f1b2c98a6"})
 
-	config := ParseFlags()
+	config, err := ParseFlags()
+	if err != nil {
+        t.Error(err)
+    }
 
 	if config.Command != "lookup" {
 		t.Errorf("Expected command 'lookup', got %s", config.Command)
@@ -50,54 +57,42 @@ func TestParseFlags_LookupCommand(t *testing.T) {
 	}
 }
 
-// Test missing command flag
+// Test missing command
 func TestParseFlags_MissingCommand(t *testing.T) {
 	resetArgs([]string{"-i", "sample.txt", "-s", "4096", "-o", "index.idx"})
+_,err := ParseFlags()
 
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Expected error for missing command, but function did not exit")
-		}
-	}()
-
-	ParseFlags()
+    if err == nil {
+        t.Error("Expected error for missing command, but found none")
+    }
 }
 
 // Test missing required arguments for index command
 func TestParseFlags_MissingIndexArgs(t *testing.T) {
 	resetArgs([]string{"-c", "index", "-i", "sample.txt"})
 
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Expected error for missing output file in index command, but function did not exit")
-		}
-	}()
-
-	ParseFlags()
+	_,err := ParseFlags()
+	if err == nil {
+        t.Error("Expected error for missing input file in index command, but found none")
+    }
 }
 
 // Test missing required arguments for lookup command
 func TestParseFlags_MissingLookupArgs(t *testing.T) {
 	resetArgs([]string{"-c", "lookup", "-i", "index.idx"})
 
-	defer func() {
-		if r := recover(); r == nil {
-			t.Errorf("Expected error for missing SimHash in lookup command, but function did not exit")
-		}
-	}()
-
-	ParseFlags()
+	_,err := ParseFlags()
+	if err == nil {
+        t.Error("Expected error for missing SimHash in lookup command, but found none")
+    }
 }
 
 // Test `--help` flag
 func TestParseFlags_HelpFlag(t *testing.T) {
 	resetArgs([]string{"--help"})
+ _,err := ParseFlags()
 
-	defer func() {
-		if r := recover(); r != nil {
-			t.Errorf("Help flag should exit gracefully, but function panicked")
-		}
-	}()
-
-	ParseFlags()
+    if err == nil || err.Error() != "help message displayed" {
+        t.Error("Expected error for help flag, but found none")
+    }
 }
