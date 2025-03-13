@@ -29,3 +29,11 @@ type WorkerPool struct {
     results    chan Result  
     wg         sync.WaitGroup 
 }
+func NewWorkerPool(numWorkers int) *WorkerPool {
+    return &WorkerPool{
+        workers:    make([]*Worker, numWorkers),
+        numWorkers: numWorkers,
+        tasks:      make(chan Task, numWorkers*2),    // Buffered channel
+        results:    make(chan Result, numWorkers*2),   // Buffered channel
+    }
+}
