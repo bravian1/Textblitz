@@ -1,4 +1,4 @@
-package cmd
+package internals
 
 import (
 	"flag"
@@ -27,7 +27,7 @@ func ParseFlags() CLIFlags {
 	flag.IntVar(&config.ChunkSize, "s", 4096, "Chunk size in bytes (default 4096)")
 	flag.StringVar(&config.OutputFile, "o", "", "Output index file (.idx) .Required for 'index' command")
 	flag.StringVar(&config.SimHash, "h", "", "Simhash value to search (required for 'lookup' command)")
-	flag.IntVar(&config.WorkerPool, "p", 4, "Number of worker goroutines (default 4)")
+	flag.IntVar(&config.WorkerPool, "w", 4, "Number of worker goroutines (default 4)")
 	help := flag.Bool("help", false, "Display help message")
 
 	//parse flags
@@ -57,9 +57,7 @@ func ParseFlags() CLIFlags {
 
 // DisplayHelp displays the help message
 func PrintHelp() {
-	fmt.Println(`
-	
-TextIndex CLI - Fast & Scalable Text Indexer
+	fmt.Println(`TextIndex CLI - Fast & Scalable Text Indexer
 --------------------------------------------
 A command-line tool for indexing large text files and performing fast lookups using SimHash.
 
@@ -91,7 +89,5 @@ Error Handling:
   - "Invalid chunk size" : Use a valid numeric chunk size (e.g., 1024, 4096).
   - "SimHash not found" : Ensure the index file was generated before lookup.
 
-For more details, refer to the README.md.
-`)
-
+For more details, refer to the README.md`)
 }
