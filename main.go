@@ -17,7 +17,7 @@ func main() {
 	switch config.Command {
 	case "index":
 		fmt.Println("Performing indexing...")
-		fmt.Println("Performing indexing...\n")
+		fmt.Println("Performing indexing...")
 		if err := internals.SystemIntegration(config.InputFile, config.ChunkSize, config.WorkerPool); err != nil {
 			fmt.Printf("Error during indexing: %v\n", err)
 			return
