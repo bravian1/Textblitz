@@ -12,4 +12,5 @@ func SystemIntegration(filename string, chunkSize int, numWorkers int) error {
 		return fmt.Errorf("failed to chunk file: %w", err)
 	}
 
+	pool := idx.NewWorkerPool(numWorkers)
 }
