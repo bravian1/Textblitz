@@ -1,6 +1,9 @@
 package indexer
 
-import "sync"
+import (
+	"sync"
+	"time"
+)
 
 // Task represents a chunk of data to be processed by a worker
 type Task struct {
@@ -49,57 +52,80 @@ func (p *WorkerPool) Start() {
 		}
 		p.workers[i] = worker
 		p.wg.Add(1)
-		go worker.run(&p.wg) // Start in goroutine
+		go worker.run(&p.wg)
 	}
+	
 }
+
 // Submit adds a new task to the pool
 func (p *WorkerPool) Submit(task Task) {
-    p.tasks <- task
+	p.tasks <- task
 }
 
 // Results returns the channel for receiving results
 func (p *WorkerPool) Results() <-chan Result {
-    return p.results
+	return p.results
 }
 
 // Stop gracefully shuts down the worker pool
 func (p *WorkerPool) Stop() {
-    close(p.tasks)          // No more tasks
-    for _, w := range p.workers {
-        w.quit <- true      // Signal workers
-    }
-    p.wg.Wait()            // Wait for completion
-    close(p.results)       // Close results
+	// First close the tasks channel to signal no more tasks
+	close(p.tasks)
+
+	// Signal all workers to quit using non-blocking sends
+	for _, w := range p.workers {
+		if w != nil { // Ensure worker exists
+			select {
+			case w.quit <- true: // Try to send quit signal
+			default: // Don't block if channel is full or can't be sent to
+			}
+		}
+	}
+
+	// Wait for all workers to finish with a timeout
+	done := make(chan struct{})
+	go func() {
+		p.wg.Wait()
+		close(done)
+	}()
+
+	select {
+	case <-done:
+		// Workers finished normally
+	case <-time.After(2 * time.Second):
+		// Timeout - some workers might be stuck
+	}
+
+	// Close results channel
+	close(p.results)
 }
 
 // run is the main worker processing loop
 func (w *Worker) run(wg *sync.WaitGroup) {
-    defer wg.Done()
-    
-    for {
-        select {
-        case task, ok := <-w.tasks:
-            if !ok {
-                return // Channel closed
-            }
-            // Process task and send result
-            result := Result{
-                TaskID: task.ID,
-                Hash:   computeHash(task.Data),
-            }
-            w.results <- result
-            
-        case <-w.quit:
-            return // Quit signal received
-        }
-    }
+	defer wg.Done()
+
+	for {
+		select {
+		case task, ok := <-w.tasks:
+			if !ok {
+				return
+			}
+			result := Result{
+				TaskID: task.ID,
+				Hash:   computeHash(task.Data),
+			}
+			w.results <- result
+
+		case <-w.quit:
+			return // Quit signal received
+		}
+	}
 }
 
 func computeHash(data []byte) int64 {
-    var hash int64
-    for _, b := range data {
-        hash = hash*31 + int64(b)
-    }
-    return hash
+	var hash int64
+	for _, b := range data {
+		hash = hash*31 + int64(b)
+	}
+	return hash
 }
-// Start initializes and starts all workers in the pool
