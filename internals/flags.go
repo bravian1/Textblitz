@@ -3,6 +3,7 @@ package internals
 import (
 	"flag"
 	"fmt"
+	"os"
 )
 
 // CLIflags holds the parsed command line arguments
@@ -18,17 +19,21 @@ type CLIFlags struct {
 // Parseflags parses command line arguments and returns a CLIFlags struct
 func ParseFlags() (CLIFlags, error) {
 	config := CLIFlags{}
+	flagSet := flag.NewFlagSet("textblitz", flag.ExitOnError)
 
 	//flags
-	flag.StringVar(&config.Command, "c", "", "Command: 'index' to index a file, 'lookup to search a hash ")
-	flag.StringVar(&config.InputFile, "i", "", "Input file(text file for  index, .idx for  lookup)")
-	flag.IntVar(&config.ChunkSize, "s", 4096, "Chunk size in bytes (default 4096)")
-	flag.StringVar(&config.OutputFile, "o", "", "Output index file (.idx) .Required for 'index' command")
-	flag.StringVar(&config.SimHash, "h", "", "Simhash value to search (required for 'lookup' command)")
-	flag.IntVar(&config.WorkerPool, "w", 4, "Number of worker goroutines (default 4)")
-	help := flag.Bool("help", false, "Display help message")
+	flagSet.StringVar(&config.Command, "c", "", "Command: 'index' to index a file, 'lookup to search a hash ")
+	flagSet.StringVar(&config.InputFile, "i", "", "Input file(text file for  index, .idx for  lookup)")
+	flagSet.IntVar(&config.ChunkSize, "s", 4096, "Chunk size in bytes (default 4096)")
+	flagSet.StringVar(&config.OutputFile, "o", "", "Output index file (.idx) .Required for 'index' command")
+	flagSet.StringVar(&config.SimHash, "h", "", "Simhash value to search (required for 'lookup' command)")
+	flagSet.IntVar(&config.WorkerPool, "w", 4, "Number of worker goroutines (default 4)")
+	help := flagSet.Bool("help", false, "Display help message")
 
-	flag.Parse()
+	err := flagSet.Parse(os.Args[1:])
+	if err != nil {
+		return config, err
+	}
 
 	if *help {
 		PrintHelp()
