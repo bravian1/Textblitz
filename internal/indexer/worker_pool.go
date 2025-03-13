@@ -94,4 +94,12 @@ func (w *Worker) run(wg *sync.WaitGroup) {
         }
     }
 }
+
+func computeHash(data []byte) int64 {
+    var hash int64
+    for _, b := range data {
+        hash = hash*31 + int64(b)
+    }
+    return hash
+}
 // Start initializes and starts all workers in the pool
