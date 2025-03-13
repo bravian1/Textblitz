@@ -3,15 +3,13 @@ package main
 import (
 	"fmt"
 
-	cmd "github.com/bravian1/Textblitz/internals"
+	"github.com/bravian1/Textblitz/internals"
 )
 
 func main() {
 
-	//command line flags
-	config := cmd.ParseFlags()
+	config := internals.ParseFlags()
 
-	//handle commands using the struct
 	switch config.Command {
 	case "index":
 		fmt.Println("Performing indexing...\n")

@@ -30,10 +30,9 @@ func ParseFlags() CLIFlags {
 	flag.IntVar(&config.WorkerPool, "w", 4, "Number of worker goroutines (default 4)")
 	help := flag.Bool("help", false, "Display help message")
 
-	//parse flags
 	flag.Parse()
 
-	//print help message if requested
+	
 	if *help {
 		PrintHelp()
 		os.Exit(0)
@@ -55,7 +54,7 @@ func ParseFlags() CLIFlags {
 	return config
 }
 
-// DisplayHelp displays the help message
+// print help message
 func PrintHelp() {
 	fmt.Println(`TextIndex CLI - Fast & Scalable Text Indexer
 --------------------------------------------
