@@ -1,5 +1,11 @@
 package internals
 
+import (
+	"encoding/gob"
+	"fmt"
+	"os"
+)
+
 type IndexEntry struct {
 	OriginalFile    string
 	Size            int
@@ -21,4 +27,27 @@ type IndexManager interface {
 
 type indexManager struct {
 	index IndexMap
+}
+
+// NewIndexManager creates a new index manager
+func NewIndexManager() IndexManager {
+	return &indexManager{
+		index: make(IndexMap),
+	}
+}
+
+// Load reads an index from disk using gob encoding
+func (im *indexManager) Load(inputFile string) error {
+	file, err := os.Open(inputFile)
+	if err != nil {
+		return fmt.Errorf("failed to open index file: %w", err)
+	}
+	defer file.Close()
+
+	decoder := gob.NewDecoder(file)
+	if err := decoder.Decode(&im.index); err != nil {
+		return fmt.Errorf("failed to decode index: %w", err)
+	}
+
+	return nil
 }
