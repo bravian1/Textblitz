@@ -17,7 +17,6 @@ func main() {
 	switch config.Command {
 	case "index":
 		fmt.Println("Performing indexing...")
-		fmt.Println("Performing indexing...")
 		if err := internals.SystemIntegration(config.InputFile, config.ChunkSize, config.WorkerPool); err != nil {
 			fmt.Printf("Error during indexing: %v\n", err)
 			return
@@ -25,6 +24,10 @@ func main() {
 		fmt.Printf("Successfully indexed %s\n", config.InputFile)
 	case "lookup":
 		fmt.Println("Performing lookup...")
+		if err := internals.LookUp(config.SimHash, config.OutputFile); err != nil {
+			fmt.Printf("Error during lookup: %v\n", err)
+			return
+		}
 	default:
 		fmt.Println("Invalid command. Use 'index' or 'lookup'.\n or --help for more information.")
 	}
