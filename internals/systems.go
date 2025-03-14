@@ -89,3 +89,11 @@ func outputFilename(inputFile string) string {
 	baseName := strings.TrimSuffix(inputFile, extension)
 	return baseName + ".idx"
 }
+// extractKeywords extracts a specified number of words from text for context
+func extractKeywords(text string, count int) []string {
+	words := strings.Fields(text)
+	if len(words) <= count {
+		return words
+	}
+	return words[:count]
+}
