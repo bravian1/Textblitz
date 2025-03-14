@@ -1,12 +1,25 @@
 package internals
 
 import (
-	"encoding/csv"
+	"encoding/gob"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 )
+
+// save: writes the indexMap to  a file with gob
+func Save(filename string, indexmap IndexMap) error {
+	file, err := os.Create(filename)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	encoder := gob.NewEncoder(file)
+	if err := encoder.Encode(indexmap); err != nil {
+		return err
+	}
+	return nil
+}
 
 // Formats the outputs for lookup. It takes a slice of IndexEntry as input and prints the formatted outputs.
 func LookUpOutput(simHash string, entries []IndexEntry) {
@@ -29,33 +42,38 @@ func LookUpOutput(simHash string, entries []IndexEntry) {
 	fmt.Println()
 }
 
-// save: writes the indexMap to  a file with csv
-func Save(filename string, indexmap IndexMap) error {
-	file, err := os.Create(filename)
+// Load: reads the indexMap from a file with gob
+func Load(filename string) (IndexMap, error) {
+	file, err := os.Open(filename)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer file.Close()
 
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
+	var indexMap IndexMap
+	decoder := gob.NewDecoder(file)
+	if err := decoder.Decode(&indexMap); err != nil {
+		return nil, err
+	}
+	return indexMap, nil
+}
 
-	//header
-	header := []string{"SimHash", "Original File", "Position", "Associated Words"}
-	if err := writer.Write(header); err != nil {
-		return err
+// Lookup handles the entire lookup workflow: load index, search hash, print results
+// 1.Load index from file
+// 2.Perform lookup
+// 3.Print results
+func LookUp(input_file string, simHash string) error {
+	indexmap, err := Load(input_file)
+	if err != nil {
+		return fmt.Errorf("Error loading index: %v\n", err)
 	}
 
-	for simHash, entries := range indexmap {
-		for _, entry := range entries {
-			sizeStr := strconv.Itoa(entry.Size)
-			words := strings.Join(entry.AssociatedWords, " ")
-			record := []string{simHash, entry.OriginalFile, sizeStr, words}
-			if err := writer.Write(record); err != nil {
-				return err
-			}
-		}
-
+	entries, ok := indexmap[simHash]
+	if !ok {
+		return fmt.Errorf("No entries found for SimHash: %s\n", simHash)
 	}
+	LookUpOutput(simHash, entries)
+
 	return nil
+
 }
