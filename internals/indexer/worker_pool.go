@@ -2,7 +2,8 @@ package indexer
 
 import (
 	"sync"
-
+	"time"
+	"log"
 	"github.com/bravian1/Textblitz/simhash"
 )
 
@@ -19,6 +20,7 @@ type SimHashResult struct {
 	Data       []byte
 	Offset     int
 	SourceFile string
+	ProcessingTime time.Duration
 }
 
 type SimHashWorker struct {
@@ -58,7 +60,7 @@ func NewSimHashWorkerPool(numWorkers int) *WorkerPool {
 func (p *WorkerPool) Start() {
 	featureSet := simhash.NewWordFeatureSet()
 
-	for i := range p.numWorkers {
+	for i :=0;i<p.numWorkers; i++ {
 		p.wg.Add(1)
 		worker := &SimHashWorker{
 			id:        i,
@@ -100,11 +102,12 @@ func (w *SimHashWorker) run() {
 			if !ok {
 				return // Channel closed
 			}
-
+			startTime := time.Now()
 			text := string(task.Data)
 
 			hash := w.simhasher.Hash(text)
-
+			processingTime := time.Since(startTime)
+			log.Printf("Worker %d processed task %d in %s", w.id, task.ID, processingTime)
 			// Send result
 			result := SimHashResult{
 				TaskID:     task.ID,
@@ -112,6 +115,7 @@ func (w *SimHashWorker) run() {
 				Data:       task.Data,
 				Offset:     task.Offset,
 				SourceFile: task.SourceFile,
+				ProcessingTime: processingTime,
 			}
 			w.results <- result
 
