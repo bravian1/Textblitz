@@ -4,6 +4,7 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 // save: writes the indexMap to  a file with gob
@@ -62,20 +63,34 @@ func Load(filename string) (IndexMap, error) {
 // 1.Load index from file
 // 2.Perform lookup
 // 3.Print results
-func LookUp(input_file string, simHash string) error {
+func LookUp(input_file string, simHash string, threshold int) error {
 	indexmap, err := Load(input_file)
 	if err != nil {
-		return fmt.Errorf("Error loading index: %v\n", err)
+		return fmt.Errorf("error loading index: %v", err)
 	}
 
-	entries, ok := indexmap[simHash]
-	if !ok {
-		return fmt.Errorf("No entries found for SimHash: %s\n", simHash)
+	queryHash, err := strconv.ParseUint(simHash, 16, 64)
+	if err != nil {
+		return fmt.Errorf("invalid simHash format: %v", err)
 	}
-	LookUpOutput(simHash, entries)
 
+	var matchedEntries []IndexEntry
+	for key, entries := range indexmap {
+		candidateHash, err := strconv.ParseUint(key, 16, 64)
+		if err != nil {
+			continue
+		}
+		if hammingDistance(queryHash, candidateHash) <= threshold {
+			matchedEntries = append(matchedEntries, entries...)
+		}
+	}
+
+	if len(matchedEntries) == 0 {
+		return fmt.Errorf("no fuzzy matches found for SimHash: %s with threshold %d", simHash, threshold)
+	}
+
+	LookUpOutput(simHash, matchedEntries)
 	return nil
-
 }
 
 // Calculates the number of differing bits between two 64-bit hashes.
