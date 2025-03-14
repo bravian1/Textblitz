@@ -16,29 +16,20 @@ type IndexEntry struct {
 
 type IndexMap map[string][]IndexEntry
 
-type IndexManager interface {
-	Load(inputFile string) error
-
-	Lookup(simhash string) ([]IndexEntry, error)
-
-	Add(simhash string, entry IndexEntry) error
-
-	Save(outputFile string) error
-}
-
-type indexManager struct {
+// IndexManager handles all operations related to the index
+type IndexManager struct {
 	index IndexMap
 }
 
 // NewIndexManager creates a new index manager
-func NewIndexManager() IndexManager {
-	return &indexManager{
+func NewIndexManager() *IndexManager {
+	return &IndexManager{
 		index: make(IndexMap),
 	}
 }
 
 // Load reads an index from disk using gob encoding
-func (im *indexManager) Load(inputFile string) error {
+func (im *IndexManager) Load(inputFile string) error {
 	file, err := os.Open(inputFile)
 	if err != nil {
 		return fmt.Errorf("failed to open index file: %w", err)
@@ -49,24 +40,26 @@ func (im *indexManager) Load(inputFile string) error {
 	if err := decoder.Decode(&im.index); err != nil {
 		return fmt.Errorf("failed to decode index: %w", err)
 	}
-
 	return nil
 }
 
-func (im *indexManager) Lookup(simhash string) ([]IndexEntry, error) {
-	entries, found := im.index[simhash]
-	if !found {
-		return nil, fmt.Errorf("simhash %s not found", simhash)
+// Lookup searches for entries with the given simhash value
+func (im *IndexManager) Lookup(simhash string) ([]IndexEntry, error) {
+	entries, ok := im.index[simhash]
+	if !ok {
+		return nil, fmt.Errorf("no entries found for SimHash: %s", simhash)
 	}
 	return entries, nil
 }
 
-func (im *indexManager) Add(simhash string, entry IndexEntry) error {
+// Add adds a new entry to the index
+func (im *IndexManager) Add(simhash string, entry IndexEntry) error {
 	im.index[simhash] = append(im.index[simhash], entry)
 	return nil
 }
 
-func (im *indexManager) Save(outputFile string) error {
+// Save writes the index to disk in both binary (gob) and JSON formats
+func (im *IndexManager) Save(outputFile string) error {
 	// Save in binary gob format for efficient loading
 	file, err := os.Create(outputFile)
 	if err != nil {
@@ -80,16 +73,14 @@ func (im *indexManager) Save(outputFile string) error {
 	}
 
 	// Also save as JSON for human readability
-	// Create a JSON file in the same directory as the index file
 	jsonFilePath := outputFile + ".json"
 	jsonFile, err := os.Create(jsonFilePath)
 	if err != nil {
 		fmt.Printf("Warning: Could not create JSON index file: %v\n", err)
-		return nil // Don't fail the whole operation if JSON export fails
+		return nil
 	}
 	defer jsonFile.Close()
 
-	// Use the encoding/json package
 	jsonEncoder := json.NewEncoder(jsonFile)
 	jsonEncoder.SetIndent("", "  ")
 	if err := jsonEncoder.Encode(im.index); err != nil {
@@ -99,4 +90,25 @@ func (im *indexManager) Save(outputFile string) error {
 	}
 
 	return nil
+}
+
+// LookUpOutput formats and prints the lookup results
+func LookUpOutput(simHash string, entries []IndexEntry) {
+	if len(entries) == 0 {
+		fmt.Println("No entries found.")
+		return
+	}
+
+	fmt.Println("\nLookup Complete!")
+	fmt.Println("------------------------------------")
+
+	for _, entry := range entries {
+		fmt.Printf("| SimHash       : %s\n", simHash)
+		fmt.Printf("| Original File : %s\n", entry.OriginalFile)
+		fmt.Printf("| Position      : Byte %d\n", entry.Position)
+		fmt.Printf("| Associated Words : \"%s\"\n", entry.AssociatedWords)
+		fmt.Println("------------------------------------------------")
+	}
+
+	fmt.Println()
 }
