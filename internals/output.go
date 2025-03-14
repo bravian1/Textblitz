@@ -1,11 +1,9 @@
 package internals
 
 import (
-	"encoding/csv"
+	"encoding/gob"
 	"fmt"
 	"os"
-	"strconv"
-	"strings"
 )
 
 // Formats the outputs for lookup. It takes a slice of IndexEntry as input and prints the formatted outputs.
@@ -37,25 +35,9 @@ func Save(filename string, indexmap IndexMap) error {
 	}
 	defer file.Close()
 
-	writer := csv.NewWriter(file)
-	defer writer.Flush()
-
-	//header
-	header := []string{"SimHash", "Original File", "Position", "Associated Words"}
-	if err := writer.Write(header); err != nil {
+	encoder := gob.NewEncoder(file)
+	if err := encoder.Encode(indexmap); err != nil {
 		return err
-	}
-
-	for simHash, entries := range indexmap {
-		for _, entry := range entries {
-			sizeStr := strconv.Itoa(entry.Size)
-			words := strings.Join(entry.AssociatedWords, " ")
-			record := []string{simHash, entry.OriginalFile, sizeStr, words}
-			if err := writer.Write(record); err != nil {
-				return err
-			}
-		}
-
 	}
 	return nil
 }
