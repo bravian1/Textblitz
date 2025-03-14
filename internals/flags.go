@@ -42,15 +42,15 @@ func ParseFlags() (CLIFlags, error) {
 
 	//validate flags
 	if config.Command == "" {
-		return config, fmt.Errorf("Error: Missing Command  (-c 'index' or 'lookup'). Use --help for details.")
+		return config, fmt.Errorf("error: missing command (-c 'index' or 'lookup'). Use --help for details")
 	}
 
 	if config.Command == "index" && (config.InputFile == "" || config.OutputFile == "") {
-		return config, fmt.Errorf("Error: Input file  (-i <input_file.txt> )or OutputFile (-o <index.idx>)  are required for indexing. Use --help for details.")
+		return config, fmt.Errorf("error: input file (-i <input_file.txt> )or output file (-o <index.idx>)  are required for indexing. Use --help for details")
 	}
 
 	if config.Command == "lookup" && (config.InputFile == "" || config.SimHash == "") {
-		return config, fmt.Errorf("Error:Input file  (-i <index_file.idx>) or SimHash (-h <simhash_value>)  are required for lookup. Use --help for details.")
+		return config, fmt.Errorf("error: input file (-i <index_file.idx>) or simhash (-h <simhash_value>)  are required for lookup. Use --help for details")
 	}
 
 	return config, nil
