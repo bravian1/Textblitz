@@ -1,105 +1,120 @@
 package indexer
 
-import "sync"
+import (
+	"sync"
 
-// Task represents a chunk of data to be processed by a worker
+	"github.com/bravian1/Textblitz/simhash"
+)
+
 type Task struct {
-	ID   int
-	Data []byte
+	ID         int
+	Data       []byte
+	Offset     int
+	SourceFile string
 }
 
-// Result contains the output of processing a task
-type Result struct {
-	TaskID int
-	Hash   int64
+type SimHashResult struct {
+	TaskID     int
+	Hash       uint64
+	Data       []byte
+	Offset     int
+	SourceFile string
 }
 
-// Worker represents a single worker goroutine
-type Worker struct {
-	id      int
-	tasks   chan Task
-	results chan Result
-	quit    chan bool
+type SimHashWorker struct {
+	id        int
+	tasks     chan Task
+	results   chan SimHashResult
+	quit      chan bool
+	wg        *sync.WaitGroup
+	simhasher *simhash.SimHashGen
 }
 
-// WorkerPool manages multiple workers for parallel processing
 type WorkerPool struct {
-	workers    []*Worker
+	workers    []*SimHashWorker
 	numWorkers int
 	tasks      chan Task
-	results    chan Result
+	results    chan SimHashResult
 	wg         sync.WaitGroup
 }
 
-func NewWorkerPool(numWorkers int) *WorkerPool {
+// NewSimHashWorkerPool creates and initializes a new worker pool with the specified number of workers.
+// It sets up the necessary channels and worker instances but does not start them.
+//
+// Parameters:
+//   - numWorkers: The number of worker goroutines to create
+//
+// Returns:
+//   - *WorkerPool: A new worker pool instance ready to be started
+func NewSimHashWorkerPool(numWorkers int) *WorkerPool {
 	return &WorkerPool{
-		workers:    make([]*Worker, numWorkers),
+		workers:    make([]*SimHashWorker, numWorkers),
 		numWorkers: numWorkers,
-		tasks:      make(chan Task, numWorkers*2),   // Buffered channel
-		results:    make(chan Result, numWorkers*2), // Buffered channel
+		tasks:      make(chan Task, numWorkers*2),
+		results:    make(chan SimHashResult, numWorkers*2),
 	}
 }
+
 func (p *WorkerPool) Start() {
-	for i := 0; i < p.numWorkers; i++ {
-		worker := &Worker{
-			id:      i,
-			tasks:   p.tasks,
-			results: p.results,
-			quit:    make(chan bool),
+	featureSet := simhash.NewWordFeatureSet()
+
+	for i := range p.numWorkers {
+		p.wg.Add(1)
+		worker := &SimHashWorker{
+			id:        i,
+			tasks:     p.tasks,
+			results:   p.results,
+			quit:      make(chan bool),
+			wg:        &p.wg,
+			simhasher: simhash.NewSimHashGenerator(featureSet),
 		}
 		p.workers[i] = worker
-		p.wg.Add(1)
-		go worker.run(&p.wg) // Start in goroutine
+		go worker.run() // Start worker goroutine
 	}
 }
-// Submit adds a new task to the pool
+func (p *WorkerPool) Results() <-chan SimHashResult {
+	return p.results
+}
+
 func (p *WorkerPool) Submit(task Task) {
-    p.tasks <- task
+	p.tasks <- task
 }
-
-// Results returns the channel for receiving results
-func (p *WorkerPool) Results() <-chan Result {
-    return p.results
-}
-
-// Stop gracefully shuts down the worker pool
 func (p *WorkerPool) Stop() {
-    close(p.tasks)          // No more tasks
-    for _, w := range p.workers {
-        w.quit <- true      // Signal workers
-    }
-    p.wg.Wait()            // Wait for completion
-    close(p.results)       // Close results
+	close(p.tasks) // No more tasks
+
+	// Wait for all workers to finish
+	p.wg.Wait()
+
+	// Close the results channel
+	close(p.results)
 }
 
-// run is the main worker processing loop
-func (w *Worker) run(wg *sync.WaitGroup) {
-    defer wg.Done()
-    
-    for {
-        select {
-        case task, ok := <-w.tasks:
-            if !ok {
-                return // Channel closed
-            }
-            // Process task and send result
-            result := Result{
-                TaskID: task.ID,
-                Hash:   computeHash(task.Data),
-            }
-            w.results <- result
-            
-        case <-w.quit:
-            return // Quit signal received
-        }
-    }
-}
+func (w *SimHashWorker) run() {
+	defer w.wg.Done()
 
-func computeHash(data []byte) int64 {
-    var hash int64
-    for _, b := range data {
-        hash = hash*31 + int64(b)
-    }
-    return hash
+	for {
+		select {
+		case task, ok := <-w.tasks:
+			if !ok {
+				return // Channel closed
+			}
+
+			text := string(task.Data)
+
+			hash := w.simhasher.Hash(text)
+
+			// Send result
+			result := SimHashResult{
+				TaskID:     task.ID,
+				Hash:       hash,
+				Data:       task.Data,
+				Offset:     task.Offset,
+				SourceFile: task.SourceFile,
+			}
+			w.results <- result
+
+		case <-w.quit:
+			return
+		}
+	}
 }
-// Start initializes and starts all workers in the pool
