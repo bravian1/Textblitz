@@ -257,3 +257,17 @@ Please ensure your code follows the project's style guidelines and includes appr
 ## 📄 License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+**Note**
+### Doc Formats
+
+- using  sajari/docconv package
+
+- https://github.com/sajari/docconv
+
+## Add popler utils for pdftotext to work
+Error during indexing: failed to chunk file: failed to convert document to text: error converting data: exec: "pdftotext": executable file not found in %PATH%    
+
+#### solution:
+sudo apt update
+sudo apt install poppler-utils -y
