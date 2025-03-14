@@ -72,6 +72,7 @@ func (p *WorkerPool) Start() {
 		go worker.run() // Start worker goroutine
 	}
 }
+
 func (p *WorkerPool) Results() <-chan SimHashResult {
 	return p.results
 }
@@ -79,6 +80,7 @@ func (p *WorkerPool) Results() <-chan SimHashResult {
 func (p *WorkerPool) Submit(task Task) {
 	p.tasks <- task
 }
+
 func (p *WorkerPool) Stop() {
 	close(p.tasks) // No more tasks
 
