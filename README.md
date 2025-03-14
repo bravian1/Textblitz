@@ -26,6 +26,9 @@ Always use quotes for file names with spaces to prevent such issues and ensure s
 - https://github.com/sajari/docconv
 
 ## Add popler utils for pdftotext to work
+Error during indexing: failed to chunk file: failed to convert document to text: error converting data: exec: "pdftotext": executable file not found in %PATH%    
+
+#### solution:
 sudo apt update
 sudo apt install poppler-utils -y
 
