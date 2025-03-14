@@ -19,9 +19,6 @@
   - [Handling File Names with Spaces](#handling-file-names-with-spaces)
 - [Error Handling](#error-handling)
 - [Performance Benchmarks](#performance-benchmarks)
-- [Use Cases](#use-cases)
-- [Comparison with Alternatives](#comparison-with-alternatives)
-- [FAQ](#faq)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -262,4 +259,4 @@ Please ensure your code follows the project's style guidelines and includes appr
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
