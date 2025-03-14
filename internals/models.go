@@ -51,3 +51,19 @@ func (im *indexManager) Load(inputFile string) error {
 
 	return nil
 }
+
+
+
+func (im *indexManager) Lookup(simhash string) ([]IndexEntry, error) {
+	entries, found := im.index[simhash]
+	if !found {
+		return nil, fmt.Errorf("simhash %s not found", simhash)
+	}
+	return entries, nil
+}
+
+
+func (im *indexManager) Add(simhash string, entry IndexEntry) error {
+	im.index[simhash] = append(im.index[simhash], entry)
+	return nil
+}
