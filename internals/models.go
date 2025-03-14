@@ -61,7 +61,7 @@ func (im *IndexManager) Add(simhash string, entry IndexEntry) error {
 // Save writes the index to disk in both binary (gob) and JSON formats
 func (im *IndexManager) Save(outputFile string) error {
 	// Save in binary gob format for efficient loading
-	file, err := os.Create(outputFile)
+	file, err := os.OpenFile(outputFile, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		return fmt.Errorf("failed to create index file: %w", err)
 	}
@@ -72,7 +72,7 @@ func (im *IndexManager) Save(outputFile string) error {
 		return fmt.Errorf("failed to encode index: %w", err)
 	}
 
-	// Also save as JSON for human readability
+	//Also save as JSON for human readability
 	jsonFilePath := outputFile + ".json"
 	jsonFile, err := os.Create(jsonFilePath)
 	if err != nil {
