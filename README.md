@@ -212,6 +212,19 @@ Textblitz has been benchmarked on various file sizes to demonstrate its efficien
 | 1 GB      | 250,000| 48.7s         | 320 MB       | <2ms        |
 | 10 GB     | 2.5M   | 8m 12s        | 2.1 GB       | <5ms        |
 
+### Benchmark Methodology
+
+Our performance benchmarks were conducted using the following methodology:
+
+1. **Worker Pool Execution Time**: We measured the total execution time of the worker pool to process chunks across different file sizes and worker counts.
+
+2. **Concurrency Analysis**: We tested various concurrency levels in the worker pool (2, 4, 8, 16, 32 workers) to identify optimal parallelism for different workloads.
+
+3. **Profiling**: We used Go's built-in profiling tools in the main application to collect:
+   - CPU usage patterns during indexing and lookup operations
+   - Memory allocation and garbage collection behavior
+   - Goroutine scheduling and blocking analysis
+
 ### Scaling Performance
 
 ```
