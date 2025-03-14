@@ -7,7 +7,6 @@ import (
 )
 
 func main() {
-
 	config, err := internals.ParseFlags()
 	if err != nil {
 		fmt.Printf("Error parsing flags: %v\n", err)
@@ -17,8 +16,7 @@ func main() {
 	switch config.Command {
 	case "index":
 		fmt.Println("Performing indexing...")
-		fmt.Println("Performing indexing...")
-		if err := internals.IndexFile(config.InputFile, config.ChunkSize, config.WorkerPool); err != nil {
+		if err := internals.IndexFile(config.InputFile, config.ChunkSize, config.WorkerPool, config.OutputFile); err != nil {
 			fmt.Printf("Error during indexing: %v\n", err)
 			return
 		}
