@@ -74,3 +74,22 @@ The diagram above illustrates the data flow through the Textblitz system:
 4. **SimHash Generation**: Computes similarity hashes for each chunk
 5. **Index Construction**: Maps hash values to byte offsets in the original file
 6. **Lookup System**: Retrieves chunks based on their SimHash values
+## 💻 Installation
+
+### Prerequisites
+- Go 1.16 or higher
+- Git (for cloning the repository)
+
+### Building from Source
+
+```bash
+# Clone the repository
+git clone https://github.com/bravian1/Textblitz.git
+cd Textblitz
+
+# Build the executable
+go build -o textindex
+
+# Verify installation
+./textindex --help
+```
