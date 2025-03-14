@@ -2,42 +2,40 @@ package indexer
 
 import (
 	"sync"
-	"time"
+
 	"github.com/bravian1/Textblitz/simhash"
 )
 
-
 type Task struct {
-	ID         int    
+	ID         int
 	Data       []byte
-	Offset     int    
-	SourceFile string 
+	Offset     int
+	SourceFile string
 }
 
 type SimHashResult struct {
-	TaskID     int    
-	Hash       uint64 
+	TaskID     int
+	Hash       uint64
 	Data       []byte
-	Offset     int    
-	SourceFile string 
+	Offset     int
+	SourceFile string
 }
 
-
 type SimHashWorker struct {
-	id        int                
-	tasks     chan Task          
-	results   chan SimHashResult  
-	quit      chan bool           
-	wg        *sync.WaitGroup     
+	id        int
+	tasks     chan Task
+	results   chan SimHashResult
+	quit      chan bool
+	wg        *sync.WaitGroup
 	simhasher *simhash.SimHashGen
 }
 
 type WorkerPool struct {
-	workers    []*SimHashWorker   
-	numWorkers int               
-	tasks      chan Task          
-	results    chan SimHashResult 
-	wg         sync.WaitGroup    
+	workers    []*SimHashWorker
+	numWorkers int
+	tasks      chan Task
+	results    chan SimHashResult
+	wg         sync.WaitGroup
 }
 
 // NewSimHashWorkerPool creates and initializes a new worker pool with the specified number of workers.
@@ -56,7 +54,6 @@ func NewSimHashWorkerPool(numWorkers int) *WorkerPool {
 		results:    make(chan SimHashResult, numWorkers*2),
 	}
 }
-
 
 func (p *WorkerPool) Start() {
 	featureSet := simhash.NewWordFeatureSet()
@@ -79,7 +76,6 @@ func (p *WorkerPool) Results() <-chan SimHashResult {
 	return p.results
 }
 
-
 func (p *WorkerPool) Stop() {
 	close(p.tasks) // No more tasks
 
@@ -100,9 +96,7 @@ func (w *SimHashWorker) run() {
 				return // Channel closed
 			}
 
-	
 			text := string(task.Data)
-
 
 			hash := w.simhasher.Hash(text)
 
@@ -117,8 +111,7 @@ func (w *SimHashWorker) run() {
 			w.results <- result
 
 		case <-w.quit:
-			return 
+			return
 		}
 	}
 }
-
