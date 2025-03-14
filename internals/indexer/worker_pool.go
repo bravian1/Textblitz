@@ -3,35 +3,41 @@ package indexer
 import (
 	"sync"
 	"time"
+	"github.com/bravian1/Textblitz/simhash"
 )
 
-// Task represents a chunk of data to be processed by a worker
+
 type Task struct {
-	ID   int
-	Data []byte
+	ID         int    
+	Data       []byte
+	Offset     int    
+	SourceFile string 
 }
 
-// Result contains the output of processing a task
-type Result struct {
-	TaskID int
-	Hash   int64
+type SimHashResult struct {
+	TaskID     int    
+	Hash       uint64 
+	Data       []byte
+	Offset     int    
+	SourceFile string 
 }
 
-// Worker represents a single worker goroutine
-type Worker struct {
-	id      int
-	tasks   chan Task
-	results chan Result
-	quit    chan bool
+
+type SimHashWorker struct {
+	id        int                
+	tasks     chan Task          
+	results   chan SimHashResult  
+	quit      chan bool           
+	wg        *sync.WaitGroup     
+	simhasher *simhash.SimHashGen
 }
 
-// WorkerPool manages multiple workers for parallel processing
 type WorkerPool struct {
-	workers    []*Worker
-	numWorkers int
-	tasks      chan Task
-	results    chan Result
-	wg         sync.WaitGroup
+	workers    []*SimHashWorker   
+	numWorkers int               
+	tasks      chan Task          
+	results    chan SimHashResult 
+	wg         sync.WaitGroup    
 }
 
 func NewWorkerPool(numWorkers int) *WorkerPool {
@@ -54,30 +60,26 @@ func (p *WorkerPool) Start() {
 		p.wg.Add(1)
 		go worker.run(&p.wg)
 	}
-	
-}
 
+}
 
 func (p *WorkerPool) Submit(task Task) {
 	p.tasks <- task
 }
 
-
 func (p *WorkerPool) Results() <-chan Result {
 	return p.results
 }
 
-		
 func (p *WorkerPool) Stop() {
-	
+
 	close(p.tasks)
 
-	
 	for _, w := range p.workers {
-		if w != nil { 
+		if w != nil {
 			select {
-			case w.quit <- true: 
-			default: 
+			case w.quit <- true:
+			default:
 			}
 		}
 	}
@@ -93,7 +95,6 @@ func (p *WorkerPool) Stop() {
 	case <-time.After(2 * time.Second):
 
 	}
-
 
 	close(p.results)
 }
@@ -115,7 +116,7 @@ func (w *Worker) run(wg *sync.WaitGroup) {
 			w.results <- result
 
 		case <-w.quit:
-			return 
+			return
 		}
 	}
 }
