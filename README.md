@@ -18,3 +18,14 @@ In this example, the quotes around "OpenStax - Physics.pdf" ensure that the file
 3. **Preventing Errors**: Using quotes prevents errors like "file not found" or "invalid argument" by ensuring correct argument parsing.
 
 Always use quotes for file names with spaces to prevent such issues and ensure smooth operation of the tool.
+
+### Doc Formats
+
+- using  sajari/docconv package
+
+- https://github.com/sajari/docconv
+
+## Add popler utils for pdftotext to work
+sudo apt update
+sudo apt install poppler-utils -y
+
