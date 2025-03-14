@@ -20,7 +20,7 @@ func Chunk(filename string, chunkSize int) ([][]byte, error) {
 	switch ext {
 	case ".txt":
 		return chunkFileWithGoroutines(filename, chunkSize)
-	case ".pdf", ".docx", "xml" :
+	case ".pdf", ".docx", "xml":
 		data, err := extractTextFromDoc(filename)
 		if err != nil {
 			return nil, err
@@ -102,3 +102,17 @@ func extractTextFromDoc(filename string) ([]byte, error) {
 	}
 	return []byte(result.Body), nil
 }
+
+// // extractPDFTextWithGoPdf extracts text from a PDF file using an alternative free library
+// func extractPDFTextWithGoPdf(filename string) ([]byte, error) {
+// 	// Run pdftotext command (requires poppler-utils to be installed)
+// 	cmd := exec.Command("pdftotext", filename, "-")
+// 	var out bytes.Buffer
+// 	cmd.Stdout = &out
+// 	err := cmd.Run()
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	return out.Bytes(), nil
+// }

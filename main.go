@@ -23,7 +23,7 @@ func main() {
 		fmt.Printf("Successfully indexed %s\n", config.InputFile)
 	case "lookup":
 		fmt.Println("Performing lookup...")
-		if err := internals.LookUp(config.SimHash, config.OutputFile); err != nil {
+		if err := internals.LookUp(config.InputFile, config.SimHash); err != nil {
 			fmt.Printf("Error during lookup: %v\n", err)
 			return
 		}
