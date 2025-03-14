@@ -34,3 +34,43 @@ The system breaks down large files into manageable chunks, computes similarity h
 - **Multi-threaded Processing**: Utilizes Go's concurrency for parallel processing
 - **Memory Efficient**: Optimized for handling large files with minimal memory footprint
 - **Simple CLI**: Easy-to-use command-line interface for indexing and lookup operations
+##  Architecture
+
+Textblitz follows a pipeline architecture for processing text files:
+
+```mermaid
+flowchart TB
+    Input[Text File] --> Chunker[Chunk Splitter]
+    Chunker --> WorkerPool{Worker Pool}
+    WorkerPool --> Worker1[Worker 1]
+    WorkerPool --> Worker2[Worker 2]
+    WorkerPool --> WorkerN[Worker N]
+    Worker1 --> HashGen[SimHash Generator]
+    Worker2 --> HashGen
+    WorkerN --> HashGen
+    HashGen --> IndexBuilder[Index Builder]
+    IndexBuilder --> IndexFile[(Index File)]
+    
+    LookupCmd[Lookup Command] --> SearchIndex[Search Index]
+    SearchIndex --> RetrieveChunk[Retrieve Chunk]
+    IndexFile -.-> SearchIndex
+    
+    classDef input fill:#d1f0d1,stroke:#53a653,stroke-width:2px,color:#1a3a1a
+    classDef process fill:#d1e8f0,stroke:#4a6da7,stroke-width:2px,color:#1a3a5a
+    classDef worker fill:#ffd8b6,stroke:#e67e22,stroke-width:2px,color:#5a3a1a
+    classDef storage fill:#e6d8e6,stroke:#9b59b6,stroke-width:2px,color:#3a1a3a
+    
+    class Input,LookupCmd input
+    class Chunker,HashGen,IndexBuilder,SearchIndex,RetrieveChunk process
+    class WorkerPool,Worker1,Worker2,WorkerN worker
+    class IndexFile storage
+```
+
+The diagram above illustrates the data flow through the Textblitz system:
+
+1. **Input Handling**: Parses text files and command-line arguments
+2. **Chunk Splitting**: Divides text into fixed-size chunks (configurable)
+3. **Worker Pool**: Distributes processing across multiple goroutines
+4. **SimHash Generation**: Computes similarity hashes for each chunk
+5. **Index Construction**: Maps hash values to byte offsets in the original file
+6. **Lookup System**: Retrieves chunks based on their SimHash values
