@@ -26,3 +26,11 @@
 Textblitz is a fast and scalable text indexing system written in Go, designed to efficiently search and retrieve data from large text files. It tackles the common challenge of quickly searching through extensive text corpora by implementing a SimHash-based chunking and indexing strategy.
 
 The system breaks down large files into manageable chunks, computes similarity hashes for each chunk, and builds an optimized in-memory index. This approach enables lightning-fast retrieval of content based on hash values, making it ideal for applications requiring quick text lookups.
+## Features
+
+- **Efficient Chunking**: Splits text files into configurable fixed-size chunks
+- **SimHash Fingerprinting**: Generates hash signatures that group similar text chunks together
+- **Fast Lookup**: Provides immediate retrieval of text chunks based on hash values
+- **Multi-threaded Processing**: Utilizes Go's concurrency for parallel processing
+- **Memory Efficient**: Optimized for handling large files with minimal memory footprint
+- **Simple CLI**: Easy-to-use command-line interface for indexing and lookup operations
