@@ -208,15 +208,6 @@ Textblitz provides clear error messages to help you troubleshoot common issues:
 - **Memory Errors**: Reduce worker count (`-w`) or chunk size (`-s`)
 - **Index Corruption**: Regenerate the index file if you encounter format errors
 
-### Debugging Tips
-
-```bash
-# Enable verbose logging
-textindex -c index -i input.txt -o output.idx --verbose
-```
-
-For large files, consider processing in smaller batches and monitoring system resources during indexing operations.
-
 ## Performance Benchmarks
 
 Textblitz has been benchmarked on various file sizes to demonstrate its efficiency and scalability:
@@ -251,92 +242,6 @@ Textblitz has been benchmarked on various file sizes to demonstrate its efficien
 │                          File Size (GB)                 │
 └────────────────────────────────────────────────────────┘
 ```
-
-### Optimization Tips
-
-- For optimal performance, use chunk sizes between 2KB and 8KB
-- Worker count should generally match available CPU cores
-- For very large files (>10GB), consider processing in batches
-- SSD storage significantly improves indexing and lookup speeds
-
-## Use Cases
-
-Textblitz excels in several real-world applications:
-
-### Document Similarity Detection
-
-Identify similar documents or sections within a large corpus, useful for:
-- Academic paper analysis
-- Legal document comparison
-- Content recommendation systems
-
-### Plagiarism Detection
-
-```bash
-# Index a reference corpus
-textindex -c index -i reference_corpus.txt -o reference.idx
-
-# Check new document against reference
-python scripts/similarity_check.py -d new_document.txt -i reference.idx -t 0.8
-```
-
-### Content Deduplication
-
-Eliminate redundant content in large datasets:
-- Web crawl results
-- Log file analysis
-- Data cleaning pipelines
-
-### Fast Text Search and Retrieval
-
-Implement efficient search functionality:
-- Personal knowledge bases
-- Document management systems
-- Content archives
-
-## Comparison with Alternatives
-
-| Feature | Textblitz | Elasticsearch | grep/awk | Custom SQL |
-|---------|-----------|--------------|----------|------------|
-| Setup Complexity | Low | High | Low | Medium |
-| Memory Efficiency | High | Medium | Low | Medium |
-| Similarity Search | Yes | Yes | No | Limited |
-| Processing Speed | Fast | Medium | Very Fast | Slow |
-| Scalability | Good | Excellent | Poor | Medium |
-| Fuzzy Matching | Yes | Yes | Limited | Limited |
-| Dependencies | Minimal | Many | None | Database |
-
-### When to Choose Textblitz
-
-- You need similarity-based search, not just exact matching
-- Memory efficiency is important
-- You prefer a lightweight, standalone tool
-- Your data is primarily text-based
-- You want a simple command-line interface
-
-## FAQ
-
-### General Questions
-
-**Q: What makes Textblitz different from regular text search tools?**  
-A: Textblitz uses SimHash to find similar content, not just exact matches. It's optimized for large files and provides fast retrieval through its indexing system.
-
-**Q: Is Textblitz suitable for real-time applications?**  
-A: Yes, for lookup operations. Indexing is a batch process, but once indexed, lookups are extremely fast (<5ms even for large datasets).
-
-**Q: Can Textblitz handle non-English text?**  
-A: Yes, Textblitz works with any UTF-8 encoded text, including non-Latin scripts and special characters.
-
-### Technical Questions
-
-**Q: What is the maximum file size Textblitz can handle?**  
-A: Textblitz has been tested with files up to 50GB. The practical limit depends on available memory and storage.
-
-**Q: Does Textblitz support distributed processing?**  
-A: The current version runs on a single machine but utilizes multi-core processing. A distributed version is on our roadmap.
-
-**Q: How can I tune SimHash parameters for my specific use case?**  
-A: Adjust the chunk size (`-s`) for your specific content type. Smaller chunks (2-4KB) work well for detecting small similarities, while larger chunks (8-16KB) are better for document-level similarity.
 ## 🤝 Contributing
 
 Contributions to Textblitz are welcome! Here's how you can help:
