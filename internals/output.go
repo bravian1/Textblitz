@@ -62,7 +62,7 @@ func Load(filename string) (IndexMap, error) {
 // 1.Load index from file
 // 2.Perform lookup
 // 3.Print results
-func LookUp(input_file string, simHash string,) error {
+func LookUp(input_file string, simHash string) error {
 	indexmap, err := Load(input_file)
 	if err != nil {
 		return fmt.Errorf("Error loading index: %v\n", err)
@@ -76,4 +76,15 @@ func LookUp(input_file string, simHash string,) error {
 
 	return nil
 
+}
+
+// Calculates the number of differing bits between two 64-bit hashes.
+func hammingDistance(a, b uint64) int {
+	diff := a ^ b
+	count := 0
+	for diff != 0 {
+		count++
+		diff &= diff - 1
+	}
+	return count
 }
