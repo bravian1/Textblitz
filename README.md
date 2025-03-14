@@ -93,3 +93,45 @@ go build -o textindex
 # Verify installation
 ./textindex --help
 ```
+## 📝 Usage
+
+Textblitz provides two primary commands: indexing and lookup.
+
+### Indexing Files
+
+Process a text file by splitting it into chunks, computing SimHash values, and creating an index:
+
+```bash
+textindex -c index -i <input_file.txt> -s <chunk_size> -o <index_file.idx> -w <workers>
+```
+
+**Arguments:**
+- `-c index`: Specifies the indexing command
+- `-i <input_file.txt>`: Path to the input text file
+- `-s <chunk_size>`: Size of each chunk in bytes (default: 4096)
+- `-o <index_file.idx>`: Path to save the generated index
+- `-w <workers>`: Number of worker goroutines for parallel processing (default: 4)
+
+**Example:**
+
+```bash
+textindex -c index -i large_text.txt -s 4096 -o index.idx -w 8
+```
+### Looking Up by SimHash
+
+Find a chunk in the indexed file based on its SimHash value:
+
+```bash
+textindex -c lookup -i <index_file.idx> -h <simhash_value>
+```
+
+**Arguments:**
+- `-c lookup`: Specifies the lookup command
+- `-i <index_file.idx>`: Path to the previously generated index file
+- `-h <simhash_value>`: SimHash value to search for
+
+**Example:**
+
+```bash
+textindex -c lookup -i index.idx -h 3e4f1b2c98a61
+```
