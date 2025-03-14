@@ -124,3 +124,9 @@ func (w *SimHashWorker) run() {
 		}
 	}
 }
+//Outliers:
+// A small number of tasks took significantly longer:
+// Task 183: 11.4ms (Worker 0)
+// Task 119: 8.1ms (Worker 3)
+// Task 429: 10.3ms (Worker 0)
+// These outliers likely represent tasks with more complex or larger text content

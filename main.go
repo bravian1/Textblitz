@@ -3,9 +3,15 @@ package main
 import (
 	"fmt"
 	"github.com/bravian1/Textblitz/internals"
+	"runtime/pprof"
+	"os"
 )
 
 func main() {
+	f, _ := os.Create("cpu.pprof")
+	pprof.StartCPUProfile(f)
+	defer pprof.StopCPUProfile()
+
 	config, err := internals.ParseFlags()
 	if err != nil {
 		fmt.Printf("Error parsing flags: %v\n", err)
@@ -29,4 +35,7 @@ func main() {
 	default:
 		fmt.Println("Invalid command. Use 'index' or 'lookup'.\n or --help for more information.")
 	}
+	f2, _ := os.Create("memory.pprof")
+	pprof.WriteHeapProfile(f2)
+	defer f2.Close()
 }
