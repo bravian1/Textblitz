@@ -2,9 +2,14 @@ package internals
 
 import (
 	"fmt"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"sync"
+
 	idx "github.com/bravian1/Textblitz/internals/indexer"
 )
+
 func IndexFile(filename string, chunkSize int, numWorkers int) error {
 
 	indexManager := NewIndexManager()
@@ -14,10 +19,8 @@ func IndexFile(filename string, chunkSize int, numWorkers int) error {
 		return fmt.Errorf("failed to chunk file: %w", err)
 	}
 
-
 	pool := idx.NewSimHashWorkerPool(numWorkers)
 	pool.Start()
-
 
 	for i, chunk := range chunks {
 		pool.Submit(idx.Task{
@@ -28,14 +31,13 @@ func IndexFile(filename string, chunkSize int, numWorkers int) error {
 		})
 	}
 
-
 	resultCount := 0
 
 	results := make(chan idx.SimHashResult, len(chunks))
 
 	var wg sync.WaitGroup
 	wg.Add(1)
-	
+
 	go func() {
 		defer wg.Done()
 		for i := 0; i < len(chunks); i++ {
@@ -47,12 +49,10 @@ func IndexFile(filename string, chunkSize int, numWorkers int) error {
 		}
 	}()
 
-	
 	go func() {
 		wg.Wait()
 		close(results)
 	}()
-
 
 	for result := range results {
 
@@ -63,7 +63,6 @@ func IndexFile(filename string, chunkSize int, numWorkers int) error {
 			AssociatedWords: extractKeywords(string(result.Data), 5),
 		}
 
-		
 		if err := indexManager.Add(strconv.FormatUint(result.Hash, 10), entry); err != nil {
 			pool.Stop()
 			return fmt.Errorf("failed to add entry to index: %w", err)
@@ -72,17 +71,21 @@ func IndexFile(filename string, chunkSize int, numWorkers int) error {
 		resultCount++
 	}
 
-
 	pool.Stop()
 
-
 	outputFile := outputFilename(filename)
-
 
 	if err := indexManager.Save(outputFile); err != nil {
 		return fmt.Errorf("failed to save index: %w", err)
 	}
 
 	return nil
+
 }
 
+// outputFilename generates the index filename from the input filename
+func outputFilename(inputFile string) string {
+	extension := filepath.Ext(inputFile)
+	baseName := strings.TrimSuffix(inputFile, extension)
+	return baseName + ".idx"
+}
