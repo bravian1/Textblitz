@@ -22,6 +22,7 @@ func main() {
 		fmt.Printf("Successfully indexed %s\n", config.InputFile)
 	case "lookup":
 		fmt.Println("Performing lookup...")
+
 		indexManager := internals.NewIndexManager()
 
 		if err := indexManager.Load(config.InputFile); err != nil {
