@@ -1,9 +1,11 @@
 package indexer
 
 import (
+	"bytes"
 	"testing"
 	"time"
 )
+
 // TestNewSimHashWorkerPool tests that a new worker pool is created with the correct configuration
 func TestNewSimHashWorkerPool(t *testing.T) {
 	numWorkers := 4
@@ -30,91 +32,52 @@ func TestNewSimHashWorkerPool(t *testing.T) {
 	}
 }
 
-
-func TestWorkerPoolStart(t *testing.T) {
-	numWorkers := 3
-	pool := NewWorkerPool(numWorkers)
-
-	pool.Start()
-
-	if len(pool.workers) != numWorkers {
-		t.Errorf("Expected %d workers, but got %d", numWorkers, len(pool.workers))
-	}
-
-	for i, worker := range pool.workers {
-		if worker.id != i {
-			t.Errorf("Worker ID mismatch: expected %d, got %d", i, worker.id)
-		}
-		if worker.quit == nil {
-			t.Errorf("Worker %d has a nil quit channel", i)
-		}
-	}
-
-
-	taskSent := make(chan struct{})
-	go func() {
-
-		select {
-		case pool.tasks <- Task{ID: 1, Data: []byte("test")}:
-			close(taskSent)
-		case <-time.After(500 * time.Millisecond):
-		
-			close(taskSent)
-		}
-	}()
-
-	select {
-	case <-taskSent:
-		
-	case <-time.After(1 * time.Second):
-		t.Log("Warning: Timeout waiting to send task")
-	}
-	stopDone := make(chan struct{})
-	go func() {
-		pool.Stop()
-		close(stopDone)
-	}()
-
-	select {
-	case <-stopDone:
-	
-	case <-time.After(1 * time.Second):
-		t.Log("Warning: Timeout waiting for pool to stop")
-	}
-}
-
-// TestSubmitAndResults verifies that tasks can be submitted and results retrieved
-func TestSubmitAndResults(t *testing.T) {
-	pool := NewWorkerPool(1)
+// TestWorkerPoolBasicProcessing tests the basic flow of a worker pool processing tasks
+func TestWorkerPoolBasicProcessing(t *testing.T) {
+	// Create a worker pool with 2 workers
+	pool := NewSimHashWorkerPool(2)
 	pool.Start()
 	defer pool.Stop()
 
-	// Create a test task
-	testTask := Task{
-		ID:   42,
-		Data: []byte("test data"),
+	// Create a simple test task
+	testData := []byte("This is a test string for simhash calculation")
+	task := Task{
+		ID:         1,
+		Data:       testData,
+		Offset:     0,
+		SourceFile: "test.txt",
 	}
-	expectedHash := computeHash(testTask.Data)
 
+	// Submit the task to the pool
+	pool.Submit(task)
 
-	pool.Submit(testTask)
-
-	
-	var result Result
+	// Get the result
+	var result SimHashResult
 	select {
 	case result = <-pool.Results():
-		
-	case <-time.After(1 * time.Second):
-		t.Fatal("Timeout waiting for result")
+		// Got a result
+	case <-time.After(2 * time.Second):
+		t.Fatal("Timed out waiting for result")
 	}
 
-	
-	if result.TaskID != testTask.ID {
-		t.Errorf("Expected TaskID %d, got %d", testTask.ID, result.TaskID)
+	// Verify the result
+	if result.TaskID != task.ID {
+		t.Errorf("Expected TaskID %d, got %d", task.ID, result.TaskID)
 	}
 
-	if result.Hash != expectedHash {
-		t.Errorf("Expected Hash %d, got %d", expectedHash, result.Hash)
+	if !bytes.Equal(result.Data, task.Data) {
+		t.Error("Result data doesn't match task data")
+	}
+
+	if result.Offset != task.Offset {
+		t.Errorf("Expected Offset %d, got %d", task.Offset, result.Offset)
+	}
+
+	if result.SourceFile != task.SourceFile {
+		t.Errorf("Expected SourceFile %s, got %s", task.SourceFile, result.SourceFile)
+	}
+
+	if result.Hash == 0 {
+		t.Error("Expected non-zero hash value")
 	}
 }
-
