@@ -4,6 +4,7 @@ import (
 	"sync"
 
 	"github.com/bravian1/Textblitz/simhash"
+	"encoding/base64"
 )
 
 type Task struct {
@@ -101,7 +102,7 @@ func (w *SimHashWorker) run() {
 				return // Channel closed
 			}
 
-			text := string(task.Data)
+			text := base64.StdEncoding.EncodeToString(task.Data)
 
 			hash := w.simhasher.Hash(text)
 
