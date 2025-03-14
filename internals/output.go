@@ -27,7 +27,7 @@ func LookUpOutput(simHash string, entries []IndexEntry) {
 	fmt.Println()
 }
 
-// save: writes the indexMap to  a file with csv
+// save: writes the indexMap to  a file with gob
 func Save(filename string, indexmap IndexMap) error {
 	file, err := os.Create(filename)
 	if err != nil {
@@ -40,4 +40,20 @@ func Save(filename string, indexmap IndexMap) error {
 		return err
 	}
 	return nil
+}
+
+// Load: reads the indexMap from a file with gob
+func Load (filename string) (IndexMap , error) {
+	file, err := os.Open(filename)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var indexMap IndexMap
+	decoder := gob.NewDecoder(file)
+	if err := decoder.Decode(&indexMap); err != nil {
+		return nil, err
+	}
+	return indexMap, nil	
 }
