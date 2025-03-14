@@ -144,3 +144,50 @@ go run main.go -c index -i "OpenStax - Physics.pdf" -o sample.idx
 ```
 
 In this example, the quotes around "OpenStax - Physics.pdf" ensure that the file name is correctly interpreted, even though it contains spaces. Without quotes, the command-line parser would treat each word as a separate argument, leading to errors.
+## ⚠️ Error Handling
+
+Textblitz is designed with robust error handling to ensure reliable operation. Here are common errors you might encounter and how to resolve them:
+
+### Command-Line Errors
+
+- **Missing Command Error**: `Error: Missing Command (-c 'index' or 'lookup')`
+  - Solution: Always specify the command using `-c index` or `-c lookup`
+
+- **Missing Required Arguments**:
+  - For indexing: `Error: Input file (-i <input_file.txt>) or OutputFile (-o <index.idx>) are required for indexing`
+  - For lookup: `Error: Input file (-i <index_file.idx>) or SimHash (-h <simhash_value>) are required for lookup`
+  - Solution: Ensure all required arguments are provided based on your command
+
+### File Operation Errors
+
+- **File Not Found**: `Error during indexing: open <filename>: no such file or directory`
+  - Solution: Verify the file path is correct and the file exists
+
+- **Permission Denied**: `Error during indexing: permission denied`
+  - Solution: Ensure you have read permissions for input files and write permissions for output files
+
+- **Index File Corruption**: `Error during lookup: invalid index file format`
+  - Solution: Regenerate the index file; it may be corrupted or incompatible
+
+### SimHash Lookup Errors
+
+- **SimHash Not Found**: `Error during lookup: simhash value not found in index`
+  - Solution: Verify the SimHash value is correct and exists in the index file
+
+- **Invalid SimHash Format**: `Error during lookup: invalid simhash format`
+  - Solution: Ensure the SimHash value is in the correct hexadecimal format
+
+### Processing Errors
+
+- **Memory Allocation Error**: `Error during indexing: cannot allocate memory`
+  - Solution: Try reducing the worker count (`-w`) or processing smaller files
+
+- **Worker Pool Error**: `Error during indexing: worker pool initialization failed`
+  - Solution: Try reducing the number of workers or restart the application
+
+### Best Practices
+
+- Always check command outputs for error messages
+- For large files, monitor system resources during indexing
+- Use the `--help` flag for command usage reminders
+- Review documentation for specific error codes and messages
