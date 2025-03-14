@@ -40,91 +40,57 @@ type WorkerPool struct {
 	wg         sync.WaitGroup    
 }
 
-func NewWorkerPool(numWorkers int) *WorkerPool {
+// NewSimHashWorkerPool creates and initializes a new worker pool with the specified number of workers.
+// It sets up the necessary channels and worker instances but does not start them.
+//
+// Parameters:
+//   - numWorkers: The number of worker goroutines to create
+//
+// Returns:
+//   - *WorkerPool: A new worker pool instance ready to be started
+func NewSimHashWorkerPool(numWorkers int) *WorkerPool {
 	return &WorkerPool{
-		workers:    make([]*Worker, numWorkers),
+		workers:    make([]*SimHashWorker, numWorkers),
 		numWorkers: numWorkers,
-		tasks:      make(chan Task, numWorkers*2),   // Buffered channel
-		results:    make(chan Result, numWorkers*2), // Buffered channel
+		tasks:      make(chan Task, numWorkers*2),
+		results:    make(chan SimHashResult, numWorkers*2),
 	}
 }
+
+// Start initializes and starts all workers in the pool.
+// Each worker runs in its own goroutine and processes tasks until stopped.
+// The method creates a shared feature set for all workers to ensure consistent hashing.
 func (p *WorkerPool) Start() {
-	for i := 0; i < p.numWorkers; i++ {
-		worker := &Worker{
-			id:      i,
-			tasks:   p.tasks,
-			results: p.results,
-			quit:    make(chan bool),
+	featureSet := simhash.NewWordFeatureSet()
+
+	for i := range p.numWorkers {
+		p.wg.Add(1)
+		worker := &SimHashWorker{
+			id:        i,
+			tasks:     p.tasks,
+			results:   p.results,
+			quit:      make(chan bool),
+			wg:        &p.wg,
+			simhasher: simhash.NewSimHashGenerator(featureSet),
 		}
 		p.workers[i] = worker
-		p.wg.Add(1)
-		go worker.run(&p.wg)
+		go worker.run() // Start worker goroutine
 	}
-
 }
-
-func (p *WorkerPool) Submit(task Task) {
-	p.tasks <- task
-}
-
-func (p *WorkerPool) Results() <-chan Result {
+func (p *WorkerPool) Results() <-chan SimHashResult {
 	return p.results
 }
 
+// Stop gracefully shuts down the worker pool.
+// It closes the tasks channel, waits for all workers to finish,
+// and then closes the results channel.
 func (p *WorkerPool) Stop() {
+	close(p.tasks) // No more tasks
 
-	close(p.tasks)
+	// Wait for all workers to finish
+	p.wg.Wait()
 
-	for _, w := range p.workers {
-		if w != nil {
-			select {
-			case w.quit <- true:
-			default:
-			}
-		}
-	}
-
-	done := make(chan struct{})
-	go func() {
-		p.wg.Wait()
-		close(done)
-	}()
-
-	select {
-	case <-done:
-	case <-time.After(2 * time.Second):
-
-	}
-
+	// Close the results channel
 	close(p.results)
 }
 
-// run is the main worker processing loop
-func (w *Worker) run(wg *sync.WaitGroup) {
-	defer wg.Done()
-
-	for {
-		select {
-		case task, ok := <-w.tasks:
-			if !ok {
-				return
-			}
-			result := Result{
-				TaskID: task.ID,
-				Hash:   computeHash(task.Data),
-			}
-			w.results <- result
-
-		case <-w.quit:
-			return
-		}
-	}
-}
-
-func computeHash(data []byte) int64 {
-	var hash int64
-	for _, b := range data {
-		hash = hash*31 + int64(b)
-	}
-	return hash
-}
