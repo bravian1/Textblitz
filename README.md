@@ -197,35 +197,24 @@ go run main.go -c index -i "OpenStax - Physics.pdf" -o sample.idx
 In this example, the quotes around "OpenStax - Physics.pdf" ensure that the file name is correctly interpreted, even though it contains spaces. Without quotes, the command-line parser would treat each word as a separate argument, leading to errors.
 ## ⚠️ Error Handling
 
-Textblitz implements comprehensive error handling to ensure reliability across various operations. This section provides detailed guidance for troubleshooting common issues.
+Textblitz provides clear error messages to help you troubleshoot common issues:
 
-### Command-Line Errors
+### Common Errors
 
-| Error | Description | Solution |
-|-------|-------------|----------|
-| **Missing Command** | `Error: Missing Command (-c 'index' or 'lookup')` | Specify the command using `-c index` or `-c lookup` |
-| **Missing Input File** | `Error: Input file (-i) is required` | Provide the input file path with `-i <filename>` |
-| **Missing Output File** | `Error: Output file (-o) is required for indexing` | Specify the output path with `-o <filename>` |
-| **Missing SimHash** | `Error: SimHash value (-h) is required for lookup` | Include the hash value with `-h <simhash>` |
-| **Invalid Parameter** | `Error: Invalid parameter value` | Check parameter format and allowed values |
+**Command-Line Errors:**
+- Missing command: Specify `-c index` or `-c lookup`
+- Missing input file: Provide the input path with `-i <filename>`
+- Missing output file: Specify the output path with `-o <filename>`
+- Missing SimHash: Include the hash value with `-h <simhash>`
 
-### File Operation Errors
+**File Operation Errors:**
+- File not found: Check that the file exists and path is correct
+- Permission denied: Ensure you have proper read/write permissions
+- Index file corruption: Regenerate the index file
 
-| Error | Description | Solution |
-|-------|-------------|----------|
-| **File Not Found** | `Error: open <filename>: no such file or directory` | Verify file path and existence |
-| **Permission Denied** | `Error: permission denied` | Check file permissions (read for input, write for output) |
-| **Index File Corruption** | `Error: invalid index file format` | Regenerate the index file |
-| **File Too Large** | `Error: file size exceeds maximum allowed` | Process the file in smaller chunks or increase memory allocation |
-
-### Processing Errors
-
-| Error | Description | Solution |
-|-------|-------------|----------|
-| **Memory Allocation** | `Error: cannot allocate memory` | Reduce worker count (`-w`) or chunk size (`-s`) |
-| **Worker Pool Failure** | `Error: worker pool initialization failed` | Decrease worker count or restart application |
-| **Processing Timeout** | `Error: processing timed out` | Increase chunk size or reduce file size |
-| **Hash Collision** | `Error: hash collision detected` | Adjust chunk size to reduce collision probability |
+**Processing Errors:**
+- Memory allocation errors: Reduce worker count or chunk size
+- Worker pool failures: Decrease worker count and restart
 
 ### Debugging Tips
 
@@ -233,30 +222,15 @@ Textblitz implements comprehensive error handling to ensure reliability across v
 # Enable verbose logging
 textindex -c index -i input.txt -o output.idx --verbose
 
-# Generate debug information
-textindex -c index -i input.txt -o output.idx --debug
-
 # Validate an index file
 textindex --validate-index -i index.idx
 ```
 
-### Error Exit Codes
-
-| Code | Meaning |
-|------|--------|
-| 1 | General error |
-| 2 | Command-line argument error |
-| 3 | File operation error |
-| 4 | Processing error |
-| 5 | Memory allocation error |
-
 ### Best Practices
 
-- **Incremental Processing**: For very large files, process in batches
-- **Resource Monitoring**: Watch memory usage during indexing of large files
-- **Validation**: Always validate generated index files before deployment
-- **Backup**: Keep backups of original files before processing
-- **Error Logs**: Save error outputs for troubleshooting
+- For large files, monitor system resources during indexing
+- Keep backups of original files before processing
+- Check command outputs for error messages
 
 ## Performance Benchmarks
 
