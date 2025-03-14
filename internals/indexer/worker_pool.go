@@ -57,9 +57,7 @@ func NewSimHashWorkerPool(numWorkers int) *WorkerPool {
 	}
 }
 
-// Start initializes and starts all workers in the pool.
-// Each worker runs in its own goroutine and processes tasks until stopped.
-// The method creates a shared feature set for all workers to ensure consistent hashing.
+
 func (p *WorkerPool) Start() {
 	featureSet := simhash.NewWordFeatureSet()
 
@@ -81,9 +79,7 @@ func (p *WorkerPool) Results() <-chan SimHashResult {
 	return p.results
 }
 
-// Stop gracefully shuts down the worker pool.
-// It closes the tasks channel, waits for all workers to finish,
-// and then closes the results channel.
+
 func (p *WorkerPool) Stop() {
 	close(p.tasks) // No more tasks
 
@@ -92,5 +88,37 @@ func (p *WorkerPool) Stop() {
 
 	// Close the results channel
 	close(p.results)
+}
+
+func (w *SimHashWorker) run() {
+	defer w.wg.Done()
+
+	for {
+		select {
+		case task, ok := <-w.tasks:
+			if !ok {
+				return // Channel closed
+			}
+
+	
+			text := string(task.Data)
+
+
+			hash := w.simhasher.Hash(text)
+
+			// Send result
+			result := SimHashResult{
+				TaskID:     task.ID,
+				Hash:       hash,
+				Data:       task.Data,
+				Offset:     task.Offset,
+				SourceFile: task.SourceFile,
+			}
+			w.results <- result
+
+		case <-w.quit:
+			return 
+		}
+	}
 }
 
