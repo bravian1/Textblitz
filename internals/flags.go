@@ -14,8 +14,8 @@ type CLIFlags struct {
 	OutputFile string //path to output.idx file
 	SimHash    string //simhash value to search
 	WorkerPool int    //number of worker goroutines
-	Threshold int // distance for fuzzy lookup
-	
+	Threshold  int    // distance for fuzzy lookup
+
 }
 
 // Parseflags parses command line arguments and returns a CLIFlags struct
@@ -67,11 +67,11 @@ A command-line tool for indexing large text files and performing fast lookups us
 
 Usage:
   textindex -c index -i <input_file> -s <chunk_size> -o <index_file> [-w <workers>]
-  textindex -c lookup -i <index_file> -h <simhash_value>
+  textindex -c lookup -i <index_file> -h <simhash_value> [-t <threshold>]
 
 Commands:
   -c index   : Index a file by splitting it into chunks, computing SimHash, and saving the index.
-  -c lookup  : Find a chunk in the indexed file based on its SimHash.
+  -c lookup  : Find a chunk in the indexed file based on its SimHash (fuzzy matching enabled by threshold)..
 
 Arguments:
   -i <file>      : Input file (text file for indexing, .idx file for lookup).
