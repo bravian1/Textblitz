@@ -67,3 +67,18 @@ func (im *indexManager) Add(simhash string, entry IndexEntry) error {
 	im.index[simhash] = append(im.index[simhash], entry)
 	return nil
 }
+
+func (im *indexManager) Save(outputFile string) error {
+	file, err := os.Create(outputFile)
+	if err != nil {
+		return fmt.Errorf("failed to create index file: %w", err)
+	}
+	defer file.Close()
+
+	encoder := gob.NewEncoder(file)
+	if err := encoder.Encode(im.index); err != nil {
+		return fmt.Errorf("failed to encode index: %w", err)
+	}
+
+	return nil
+}
