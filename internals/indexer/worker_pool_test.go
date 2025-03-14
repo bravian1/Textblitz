@@ -4,27 +4,33 @@ import (
 	"testing"
 	"time"
 )
-
-// TestNewWorkerPool verifies pool creation with correct settings
-func TestNewWorkerPool(t *testing.T) {
+// TestNewSimHashWorkerPool tests that a new worker pool is created with the correct configuration
+func TestNewSimHashWorkerPool(t *testing.T) {
 	numWorkers := 4
-	pool := NewWorkerPool(numWorkers)
+	pool := NewSimHashWorkerPool(numWorkers)
+
+	if pool == nil {
+		t.Fatal("NewSimHashWorkerPool returned nil")
+	}
 
 	if pool.numWorkers != numWorkers {
-		t.Errorf("Expected %d workers, got %d", numWorkers, pool.numWorkers)
+		t.Errorf("Expected numWorkers to be %d, got %d", numWorkers, pool.numWorkers)
 	}
+
 	if len(pool.workers) != numWorkers {
-		t.Errorf("Expected workers slice of length %d, got %d", numWorkers, len(pool.workers))
+		t.Errorf("Expected workers slice to have length %d, got %d", numWorkers, len(pool.workers))
 	}
+
 	if cap(pool.tasks) != numWorkers*2 {
-		t.Errorf("Expected task channel capacity %d, got %d", numWorkers*2, cap(pool.tasks))
+		t.Errorf("Expected tasks channel capacity to be %d, got %d", numWorkers*2, cap(pool.tasks))
 	}
+
 	if cap(pool.results) != numWorkers*2 {
-		t.Errorf("Expected results channel capacity %d, got %d", numWorkers*2, cap(pool.results))
+		t.Errorf("Expected results channel capacity to be %d, got %d", numWorkers*2, cap(pool.results))
 	}
 }
 
-// Test if the WorkerPool correctly starts the expected number of workers
+
 func TestWorkerPoolStart(t *testing.T) {
 	numWorkers := 3
 	pool := NewWorkerPool(numWorkers)
