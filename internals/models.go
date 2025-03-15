@@ -68,7 +68,7 @@ func (im *IndexManager) Save(outputFile string) error {
 		return fmt.Errorf("failed to encode index: %w", err)
 	}
 
-	// //Also save as JSON for human readability
+	// Also save as JSON for human readability
 	// jsonFilePath := outputFile + ".json"
 	// jsonFile, err := os.Create(jsonFilePath)
 	// if err != nil {
