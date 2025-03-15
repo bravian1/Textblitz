@@ -2,7 +2,6 @@ package internals
 
 import (
 	"encoding/gob"
-	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -69,22 +68,22 @@ func (im *IndexManager) Save(outputFile string) error {
 		return fmt.Errorf("failed to encode index: %w", err)
 	}
 
-	//Also save as JSON for human readability
-	jsonFilePath := outputFile + ".json"
-	jsonFile, err := os.Create(jsonFilePath)
-	if err != nil {
-		fmt.Printf("Warning: Could not create JSON index file: %v\n", err)
-		return nil
-	}
-	defer jsonFile.Close()
+	// //Also save as JSON for human readability
+	// jsonFilePath := outputFile + ".json"
+	// jsonFile, err := os.Create(jsonFilePath)
+	// if err != nil {
+	// 	fmt.Printf("Warning: Could not create JSON index file: %v\n", err)
+	// 	return nil
+	// }
+	// defer jsonFile.Close()
 
-	jsonEncoder := json.NewEncoder(jsonFile)
-	jsonEncoder.SetIndent("", "  ")
-	if err := jsonEncoder.Encode(im.index); err != nil {
-		fmt.Printf("Warning: Could not encode JSON index: %v\n", err)
-	} else {
-		fmt.Printf("Created human-readable index: %s\n", jsonFilePath)
-	}
+	// jsonEncoder := json.NewEncoder(jsonFile)
+	// jsonEncoder.SetIndent("", "  ")
+	// if err := jsonEncoder.Encode(im.index); err != nil {
+	// 	fmt.Printf("Warning: Could not encode JSON index: %v\n", err)
+	// } else {
+	// 	fmt.Printf("Created human-readable index: %s\n", jsonFilePath)
+	// }
 
 	return nil
 }
@@ -99,7 +98,7 @@ func (im *IndexManager) Save(outputFile string) error {
 //
 // 3. Return matches if the Hamming Distance is within the given threshold.
 func (im *IndexManager) LookUp(input_file string, simHash string, threshold int) error {
-	 err := im.Load(input_file)
+	err := im.Load(input_file)
 	if err != nil {
 		return fmt.Errorf("Error loading index: %v\n", err)
 	}
@@ -112,7 +111,6 @@ func (im *IndexManager) LookUp(input_file string, simHash string, threshold int)
 	}
 
 	fmt.Printf("Parsed queryHash: %d\n", queryHash)
-	
 
 	var matchedEntries []IndexEntry
 
