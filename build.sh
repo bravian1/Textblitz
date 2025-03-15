@@ -10,6 +10,14 @@ clean(){
 
 # Build the Go program
 clean
+
+if ! dpkg -l | grep -q poppler-utils; then
+    echo "poppler-utils is not installed. Installing..."
+    sudo apt update && sudo apt install -y poppler-utils
+else
+    echo "poppler-utils is already installed."
+fi
+
 echo "Building $APP_NAME..."
 go build -o "$APP_NAME" "$GO_MAIN"
 
