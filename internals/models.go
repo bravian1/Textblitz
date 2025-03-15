@@ -8,6 +8,9 @@ import (
 	"strconv"
 )
 
+// IndexEntry represents a record in the index, linking a SimHash to its metadata.
+//
+// It provides details about where the content originated, associated words for context,
 type IndexEntry struct {
 	OriginalFile    string
 	Size            int
@@ -45,6 +48,7 @@ func (im *IndexManager) Load(inputFile string) error {
 }
 
 // Lookup searches for entries with the given simhash value
+//
 // Add adds a new entry to the index
 func (im *IndexManager) Add(simhash string, entry IndexEntry) error {
 	im.index[simhash] = append(im.index[simhash], entry)
@@ -85,10 +89,15 @@ func (im *IndexManager) Save(outputFile string) error {
 	return nil
 }
 
-// Lookup handles the entire lookup workflow: load index, search hash, print results
-// 1.Load index from file
-// 2.Perform lookup
-// 3.Print results
+// LookUp performs a fuzzy search for similar hashes within a specified threshold.
+//
+// It follows these steps:
+//
+// 1. Load the precomputed index from a file.
+//
+// 2. Parse the input SimHash and compare it against stored hashes using Hamming Distance.
+//
+// 3. Return matches if the Hamming Distance is within the given threshold.
 func (im *IndexManager) LookUp(input_file string, simHash string, threshold int) error {
 	 err := im.Load(input_file)
 	if err != nil {
@@ -116,7 +125,6 @@ func (im *IndexManager) LookUp(input_file string, simHash string, threshold int)
 			matchedEntries = append(matchedEntries, entries...)
 		}
 	}
-
 	if len(matchedEntries) == 0 {
 		return fmt.Errorf("No fuzzy matches found for SimHash: %s with threshold %d\n", simHash, threshold)
 	}
@@ -125,7 +133,11 @@ func (im *IndexManager) LookUp(input_file string, simHash string, threshold int)
 	return nil
 }
 
-// Calculates the number of differing bits between two 64-bit hashes.
+// hammingDistance calculates the number of differing bits between two 64-bit hashes.
+//
+// This is used in fuzzy search to determine similarity between hashes.
+//
+// A lower Hamming Distance means the hashes are more similar.
 func hammingDistance(a, b uint64) int {
 	diff := a ^ b
 	count := 0
