@@ -8,20 +8,38 @@
 
 ## Table of Contents
 
-- [Introduction](#introduction)
-- [Features](#features)
-- [Architecture](#architecture)
-- [How SimHash Works](#how-simhash-works)
-- [Installation](#installation)
-- [Usage](#usage)
-  - [Indexing Files](#indexing-files)
-  - [Looking Up by SimHash](#looking-up-by-simhash)
-  - [Handling File Names with Spaces](#handling-file-names-with-spaces)
-- [Error Handling](#error-handling)
-- [Performance Benchmarks](#performance-benchmarks)
-- [Conclusions and Recommendations](#conclusions-and-recommendations)
-- [Contributing](#contributing)
-- [License](#license)
+- [Textblitz](#textblitz)
+  - [Table of Contents](#table-of-contents)
+  - [🚀 Introduction](#-introduction)
+  - [Features](#features)
+  - [Architecture](#architecture)
+  - [How SimHash Works](#how-simhash-works)
+    - [Feature Extraction Methods](#feature-extraction-methods)
+      - [WordFeatureSet](#wordfeatureset)
+      - [NGramFeatureSet](#ngramfeatureset)
+  - [💻 Installation](#-installation)
+    - [Prerequisites](#prerequisites)
+      - [Installing Poppler-Utils](#installing-poppler-utils)
+    - [Building from Source](#building-from-source)
+    - [Building from bash file](#building-from-bash-file)
+  - [📝 Usage](#-usage)
+    - [Indexing Files](#indexing-files)
+    - [Looking Up by SimHash](#looking-up-by-simhash)
+  - [Handling File Names with flags or spaces](#handling-file-names-with-flags-or-spaces)
+  - [⚠️ Error Handling](#️-error-handling)
+    - [Common Errors](#common-errors)
+  - [Performance Benchmarks](#performance-benchmarks)
+    - [Latest Benchmark Results](#latest-benchmark-results)
+      - [PDF Document (~100MB)](#pdf-document-100mb)
+      - [Text Document (~300KB)](#text-document-300kb)
+    - [Detailed Metrics Analysis](#detailed-metrics-analysis)
+    - [Performance Insights](#performance-insights)
+  - [Conclusions and Recommendations](#conclusions-and-recommendations)
+    - [Performance Optimization](#performance-optimization)
+    - [Use Case Recommendations](#use-case-recommendations)
+    - [Advanced Features](#advanced-features)
+  - [Contributing](#contributing)
+  - [📄 License](#-license)
 
 ## 🚀 Introduction
 
@@ -171,6 +189,21 @@ go build -o textindex
 # Verify installation
 ./textindex --help
 ```
+
+### Building from bash file
+Alternatively you can run the build script file on linux terminal to fetch dependencies and build the executable file automatically.
+
+```bash
+#change the permission of  the `build.sh` file  to be executable
+chmod +x build.sh
+
+#run build.sh
+./build.sh
+
+# Verify installation
+./textindex --help
+```
+
 ## 📝 Usage
 
 Textblitz provides two primary commands: indexing and lookup.
