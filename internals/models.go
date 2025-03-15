@@ -2,6 +2,7 @@ package internals
 
 import (
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"os"
 	"strconv"
@@ -69,21 +70,21 @@ func (im *IndexManager) Save(outputFile string) error {
 	}
 
 	// Also save as JSON for human readability
-	// jsonFilePath := outputFile + ".json"
-	// jsonFile, err := os.Create(jsonFilePath)
-	// if err != nil {
-	// 	fmt.Printf("Warning: Could not create JSON index file: %v\n", err)
-	// 	return nil
-	// }
-	// defer jsonFile.Close()
+	jsonFilePath := outputFile + ".json"
+	jsonFile, err := os.Create(jsonFilePath)
+	if err != nil {
+		fmt.Printf("Warning: Could not create JSON index file: %v\n", err)
+		return nil
+	}
+	defer jsonFile.Close()
 
-	// jsonEncoder := json.NewEncoder(jsonFile)
-	// jsonEncoder.SetIndent("", "  ")
-	// if err := jsonEncoder.Encode(im.index); err != nil {
-	// 	fmt.Printf("Warning: Could not encode JSON index: %v\n", err)
-	// } else {
-	// 	fmt.Printf("Created human-readable index: %s\n", jsonFilePath)
-	// }
+	jsonEncoder := json.NewEncoder(jsonFile)
+	jsonEncoder.SetIndent("", "  ")
+	if err := jsonEncoder.Encode(im.index); err != nil {
+		fmt.Printf("Warning: Could not encode JSON index: %v\n", err)
+	} else {
+		fmt.Printf("Created human-readable index: %s\n", jsonFilePath)
+	}
 
 	return nil
 }
