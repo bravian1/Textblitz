@@ -66,17 +66,21 @@ func Load(filename string) (IndexMap, error) {
 func LookUp(input_file string, simHash string, threshold int) error {
 	indexmap, err := Load(input_file)
 	if err != nil {
-		return fmt.Errorf("error loading index: %v", err)
+		return fmt.Errorf("Error loading index: %v\n", err)
 	}
 
-	queryHash, err := strconv.ParseUint(simHash, 16, 64)
+	fmt.Printf("Parsing simHash: %s\n", simHash)
+
+	queryHash, err := strconv.ParseUint(simHash, 10, 64)
 	if err != nil {
-		return fmt.Errorf("invalid simHash format: %v", err)
+		return fmt.Errorf("Invalid simHash format: %v", err)
 	}
+
+	fmt.Printf("Parsed queryHash: %d\n", queryHash)
 
 	var matchedEntries []IndexEntry
 	for key, entries := range indexmap {
-		candidateHash, err := strconv.ParseUint(key, 16, 64)
+		candidateHash, err := strconv.ParseUint(key, 10, 64)
 		if err != nil {
 			continue
 		}
@@ -86,7 +90,7 @@ func LookUp(input_file string, simHash string, threshold int) error {
 	}
 
 	if len(matchedEntries) == 0 {
-		return fmt.Errorf("no fuzzy matches found for SimHash: %s with threshold %d", simHash, threshold)
+		return fmt.Errorf("No fuzzy matches found for SimHash: %s with threshold %d\n", simHash, threshold)
 	}
 
 	LookUpOutput(simHash, matchedEntries)
