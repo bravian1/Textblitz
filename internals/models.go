@@ -39,20 +39,12 @@ func (im *IndexManager) Load(inputFile string) error {
 
 	decoder := gob.NewDecoder(file)
 	if err := decoder.Decode(&im.index); err != nil {
-		return fmt.Errorf("failed to decode index: %w", err)
+		return fmt.Errorf("failed to decode index: %v", err)
 	}
 	return nil
 }
 
 // Lookup searches for entries with the given simhash value
-func (im *IndexManager) Lookup(simhash string) ([]IndexEntry, error) {
-	entries, ok := im.index[simhash]
-	if !ok {
-		return nil, fmt.Errorf("no entries found for SimHash: %s", simhash)
-	}
-	return entries, nil
-}
-
 // Add adds a new entry to the index
 func (im *IndexManager) Add(simhash string, entry IndexEntry) error {
 	im.index[simhash] = append(im.index[simhash], entry)
@@ -97,8 +89,8 @@ func (im *IndexManager) Save(outputFile string) error {
 // 1.Load index from file
 // 2.Perform lookup
 // 3.Print results
-func LookUp(input_file string, simHash string, threshold int) error {
-	indexmap, err := Load(input_file)
+func (im *IndexManager) LookUp(input_file string, simHash string, threshold int) error {
+	 err := im.Load(input_file)
 	if err != nil {
 		return fmt.Errorf("Error loading index: %v\n", err)
 	}
@@ -111,9 +103,18 @@ func LookUp(input_file string, simHash string, threshold int) error {
 	}
 
 	fmt.Printf("Parsed queryHash: %d\n", queryHash)
+	
 
 	var matchedEntries []IndexEntry
-	for key, entries := range indexmap {
+
+	// //check for matched entries but dont return yet
+	// if entries, ok := im.index[simHash]; ok {
+	// 	fmt.Println("Match Found")
+	// 	LookUpOutput(simHash, entries)
+	// } 
+
+
+	for key, entries := range im.index {
 		candidateHash, err := strconv.ParseUint(key, 10, 64)
 		if err != nil {
 			continue
@@ -140,4 +141,25 @@ func hammingDistance(a, b uint64) int {
 		diff &= diff - 1
 	}
 	return count
+}
+
+// LookUpOutput formats and prints the lookup results
+func LookUpOutput(simHash string, entries []IndexEntry) {
+	if len(entries) == 0 {
+		fmt.Println("No entries found.")
+		return
+	}
+
+	fmt.Println("\nLookup Complete!")
+	fmt.Println("------------------------------------")
+
+	for _, entry := range entries {
+		fmt.Printf("| SimHash       : %s\n", simHash)
+		fmt.Printf("| Original File : %s\n", entry.OriginalFile)
+		fmt.Printf("| Position      : Byte %d\n", entry.Position)
+		fmt.Printf("| Associated Words : \"%s\"\n", entry.AssociatedWords)
+		fmt.Println("------------------------------------------------")
+	}
+
+	fmt.Println()
 }
