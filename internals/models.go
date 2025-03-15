@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 type IndexEntry struct {
@@ -92,23 +93,51 @@ func (im *IndexManager) Save(outputFile string) error {
 	return nil
 }
 
-// LookUpOutput formats and prints the lookup results
-func LookUpOutput(simHash string, entries []IndexEntry) {
-	if len(entries) == 0 {
-		fmt.Println("No entries found.")
-		return
+// Lookup handles the entire lookup workflow: load index, search hash, print results
+// 1.Load index from file
+// 2.Perform lookup
+// 3.Print results
+func LookUp(input_file string, simHash string, threshold int) error {
+	indexmap, err := Load(input_file)
+	if err != nil {
+		return fmt.Errorf("Error loading index: %v\n", err)
 	}
 
-	fmt.Println("\nLookup Complete!")
-	fmt.Println("------------------------------------")
+	fmt.Printf("Parsing simHash: %s\n", simHash)
 
-	for _, entry := range entries {
-		fmt.Printf("| SimHash       : %s\n", simHash)
-		fmt.Printf("| Original File : %s\n", entry.OriginalFile)
-		fmt.Printf("| Position      : Byte %d\n", entry.Position)
-		fmt.Printf("| Associated Words : \"%s\"\n", entry.AssociatedWords)
-		fmt.Println("------------------------------------------------")
+	queryHash, err := strconv.ParseUint(simHash, 10, 64)
+	if err != nil {
+		return fmt.Errorf("Invalid simHash format: %v", err)
 	}
 
-	fmt.Println()
+	fmt.Printf("Parsed queryHash: %d\n", queryHash)
+
+	var matchedEntries []IndexEntry
+	for key, entries := range indexmap {
+		candidateHash, err := strconv.ParseUint(key, 10, 64)
+		if err != nil {
+			continue
+		}
+		if hammingDistance(queryHash, candidateHash) <= threshold {
+			matchedEntries = append(matchedEntries, entries...)
+		}
+	}
+
+	if len(matchedEntries) == 0 {
+		return fmt.Errorf("No fuzzy matches found for SimHash: %s with threshold %d\n", simHash, threshold)
+	}
+
+	LookUpOutput(simHash, matchedEntries)
+	return nil
+}
+
+// Calculates the number of differing bits between two 64-bit hashes.
+func hammingDistance(a, b uint64) int {
+	diff := a ^ b
+	count := 0
+	for diff != 0 {
+		count++
+		diff &= diff - 1
+	}
+	return count
 }
