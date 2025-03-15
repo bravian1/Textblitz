@@ -19,9 +19,6 @@
   - [Handling File Names with Spaces](#handling-file-names-with-spaces)
 - [Error Handling](#error-handling)
 - [Performance Benchmarks](#performance-benchmarks)
-- [Use Cases](#use-cases)
-- [Comparison with Alternatives](#comparison-with-alternatives)
-- [FAQ](#faq)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -138,11 +135,6 @@ This technique allows Textblitz to efficiently find similar text chunks even whe
 git clone https://github.com/bravian1/Textblitz.git
 cd Textblitz
 
-# Build the executable
-go build -o textindex
-
-# Verify installation
-./textindex --help
 ```
 ## 📝 Usage
 
@@ -186,15 +178,13 @@ textindex -c lookup -i <index_file.idx> -h <simhash_value>
 ```bash
 textindex -c lookup -i index.idx -h 3e4f1b2c98a61
 ```
-## Handling File Names with Spaces
+## Handling File Names with flags or spaces
 
-When using the command-line interface of Textblitz, if your file names contain spaces, it's important to enclose them in quotes. This ensures that the entire file name is treated as a single argument, rather than being split into multiple arguments. For example:
+When using the command-line interface of Textblitz, if your file names contain spaces or flags, it's important to enclose them in quotes. This ensures that the entire file name is treated as a single argument, rather than being split into multiple arguments. For example:
 
 ```bash
 go run main.go -c index -i "OpenStax - Physics.pdf" -o sample.idx
 ```
-
-In this example, the quotes around "OpenStax - Physics.pdf" ensure that the file name is correctly interpreted, even though it contains spaces. Without quotes, the command-line parser would treat each word as a separate argument, leading to errors.
 ## ⚠️ Error Handling
 
 Textblitz provides clear error messages to help you troubleshoot common issues:
@@ -219,6 +209,19 @@ Textblitz has been benchmarked on various file sizes to demonstrate its efficien
 | 1 GB      | 250,000| 48.7s         | 320 MB       | <2ms        |
 | 10 GB     | 2.5M   | 8m 12s        | 2.1 GB       | <5ms        |
 
+### Benchmark Methodology
+
+Our performance benchmarks were conducted using the following methodology:
+
+1. **Worker Pool Execution Time**: We measured the total execution time of the worker pool to process chunks across different file sizes and worker counts.
+
+2. **Concurrency Analysis**: We tested various concurrency levels in the worker pool (2, 4, 8, 16, 32 workers) to identify optimal parallelism for different workloads.
+
+3. **Profiling**: We used Go's built-in profiling tools in the main application to collect:
+   - CPU usage patterns during indexing and lookup operations
+   - Memory allocation and garbage collection behavior
+   - Goroutine scheduling and blocking analysis
+
 ### Scaling Performance
 
 ```
@@ -242,9 +245,9 @@ Textblitz has been benchmarked on various file sizes to demonstrate its efficien
 │                          File Size (GB)                 │
 └────────────────────────────────────────────────────────┘
 ```
-## 🤝 Contributing
+## Contributing
 
-Contributions to Textblitz are welcome! Here's how you can help:
+Contributions to Textblitz are welcome.Here's how you can help:
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -256,18 +259,9 @@ Please ensure your code follows the project's style guidelines and includes appr
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-**Note**
-### Doc Formats
+<!-- Doc Formats
+using sajari/docconv package
 
-- using  sajari/docconv package
-
-- https://github.com/sajari/docconv
-
-## Add popler utils for pdftotext to work
-Error during indexing: failed to chunk file: failed to convert document to text: error converting data: exec: "pdftotext": executable file not found in %PATH%    
-
-#### solution:
-sudo apt update
-sudo apt install poppler-utils -y
+https://github.com/sajari/docconv -->
