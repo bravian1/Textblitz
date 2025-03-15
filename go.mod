@@ -2,8 +2,9 @@ module github.com/bravian1/Textblitz
 
 go 1.24.1
 
+require code.sajari.com/docconv v1.3.8
+
 require (
-	code.sajari.com/docconv v1.3.8 // indirect
 	github.com/JalfResi/justext v0.0.0-20170829062021-c0282dea7198 // indirect
 	github.com/PuerkitoBio/goquery v1.5.1 // indirect
 	github.com/advancedlogic/GoOse v0.0.0-20191112112754-e742535969c1 // indirect
