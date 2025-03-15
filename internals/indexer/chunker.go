@@ -75,7 +75,7 @@ func chunkDataWithGoroutines(data []byte, chunkSize int) ([][]byte, error) {
 	var wg sync.WaitGroup
 	wg.Add(numChunks)
 
-	for i := 0; i < numChunks; i++ {
+	for i := range numChunks {
 		go func(i int) {
 			defer wg.Done()
 			start := i * chunkSize
@@ -103,16 +103,3 @@ func extractTextFromDoc(filename string) ([]byte, error) {
 	return []byte(result.Body), nil
 }
 
-// // extractPDFTextWithGoPdf extracts text from a PDF file using an alternative free library
-// func extractPDFTextWithGoPdf(filename string) ([]byte, error) {
-// 	// Run pdftotext command (requires poppler-utils to be installed)
-// 	cmd := exec.Command("pdftotext", filename, "-")
-// 	var out bytes.Buffer
-// 	cmd.Stdout = &out
-// 	err := cmd.Run()
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return out.Bytes(), nil
-// }
