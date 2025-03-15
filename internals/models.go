@@ -107,13 +107,6 @@ func (im *IndexManager) LookUp(input_file string, simHash string, threshold int)
 
 	var matchedEntries []IndexEntry
 
-	// //check for matched entries but dont return yet
-	// if entries, ok := im.index[simHash]; ok {
-	// 	fmt.Println("Match Found")
-	// 	LookUpOutput(simHash, entries)
-	// } 
-
-
 	for key, entries := range im.index {
 		candidateHash, err := strconv.ParseUint(key, 10, 64)
 		if err != nil {
