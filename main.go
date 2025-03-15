@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-
 	"github.com/bravian1/Textblitz/internals"
 )
 
@@ -23,10 +22,21 @@ func main() {
 		fmt.Printf("Successfully indexed %s\n", config.InputFile)
 	case "lookup":
 		fmt.Println("Performing lookup...")
-		if err := internals.LookUp(config.SimHash, config.OutputFile); err != nil {
+
+		indexManager := internals.NewIndexManager()
+
+		if err := indexManager.Load(config.InputFile); err != nil {
+			fmt.Printf("Error loading index: %v\n", err)
+			return
+		}
+
+		entries, err := indexManager.Lookup(config.SimHash)
+		if err != nil {
 			fmt.Printf("Error during lookup: %v\n", err)
 			return
 		}
+
+		internals.LookUpOutput(config.SimHash, entries)
 	default:
 		fmt.Println("Invalid command. Use 'index' or 'lookup'.\n or --help for more information.")
 	}

@@ -37,7 +37,7 @@ func IndexFile(filename string, chunkSize int, numWorkers int, outputFile string
 				OriginalFile:    result.SourceFile,
 				Size:            len(result.Data),
 				Position:        result.Offset,
-				AssociatedWords: extractKeywords(string(result.Data), 5),
+				AssociatedWords: extractKeywords(string(result.Data), 10),
 			}
 
 			// Add the entry to our index, keyed by its simhash
