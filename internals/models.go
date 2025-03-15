@@ -5,8 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strconv"
 )
 
+// IndexEntry represents a record in the index, linking a SimHash to its metadata.
+//
+// It provides details about where the content originated, associated words for context,
 type IndexEntry struct {
 	OriginalFile    string
 	Size            int
@@ -38,20 +42,13 @@ func (im *IndexManager) Load(inputFile string) error {
 
 	decoder := gob.NewDecoder(file)
 	if err := decoder.Decode(&im.index); err != nil {
-		return fmt.Errorf("failed to decode index: %w", err)
+		return fmt.Errorf("failed to decode index: %v", err)
 	}
 	return nil
 }
 
 // Lookup searches for entries with the given simhash value
-func (im *IndexManager) Lookup(simhash string) ([]IndexEntry, error) {
-	entries, ok := im.index[simhash]
-	if !ok {
-		return nil, fmt.Errorf("no entries found for SimHash: %s", simhash)
-	}
-	return entries, nil
-}
-
+//
 // Add adds a new entry to the index
 func (im *IndexManager) Add(simhash string, entry IndexEntry) error {
 	im.index[simhash] = append(im.index[simhash], entry)
@@ -90,6 +87,65 @@ func (im *IndexManager) Save(outputFile string) error {
 	}
 
 	return nil
+}
+
+// LookUp performs a fuzzy search for similar hashes within a specified threshold.
+//
+// It follows these steps:
+//
+// 1. Load the precomputed index from a file.
+//
+// 2. Parse the input SimHash and compare it against stored hashes using Hamming Distance.
+//
+// 3. Return matches if the Hamming Distance is within the given threshold.
+func (im *IndexManager) LookUp(input_file string, simHash string, threshold int) error {
+	 err := im.Load(input_file)
+	if err != nil {
+		return fmt.Errorf("Error loading index: %v\n", err)
+	}
+
+	fmt.Printf("Parsing simHash: %s\n", simHash)
+
+	queryHash, err := strconv.ParseUint(simHash, 10, 64)
+	if err != nil {
+		return fmt.Errorf("Invalid simHash format: %v", err)
+	}
+
+	fmt.Printf("Parsed queryHash: %d\n", queryHash)
+	
+
+	var matchedEntries []IndexEntry
+
+	for key, entries := range im.index {
+		candidateHash, err := strconv.ParseUint(key, 10, 64)
+		if err != nil {
+			continue
+		}
+		if hammingDistance(queryHash, candidateHash) <= threshold {
+			matchedEntries = append(matchedEntries, entries...)
+		}
+	}
+	if len(matchedEntries) == 0 {
+		return fmt.Errorf("No fuzzy matches found for SimHash: %s with threshold %d\n", simHash, threshold)
+	}
+
+	LookUpOutput(simHash, matchedEntries)
+	return nil
+}
+
+// hammingDistance calculates the number of differing bits between two 64-bit hashes.
+//
+// This is used in fuzzy search to determine similarity between hashes.
+//
+// A lower Hamming Distance means the hashes are more similar.
+func hammingDistance(a, b uint64) int {
+	diff := a ^ b
+	count := 0
+	for diff != 0 {
+		count++
+		diff &= diff - 1
+	}
+	return count
 }
 
 // LookUpOutput formats and prints the lookup results
